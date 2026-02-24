@@ -19,6 +19,12 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "MateuszPodeszwa"
+  }
+}]]></component>
   <component name="GithubPullRequestsUISettings"><![CDATA[{
   "selectedUrlAndAccountId": {
     "url": "https://github.com/MateuszPodeszwa/Aegis-Link-VEIL",
@@ -28,7 +34,7 @@
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/AegisLink.Server/Controllers/WeatherForecastController.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/AegisLink.Shared/WeatherForecast.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file:///private/var/folders/jl/sw0000q171b119qyvsnd9bqw0000gn/T/whats-new-dir/whats-new.http" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/cc6a6012335e9d1d859be088b84394c60379b30dc616ed8f9fc5bae2713ece1/NavLink.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="HttpClientSelectedEnvironments">
     <file url="file:///private/var/folders/jl/sw0000q171b119qyvsnd9bqw0000gn/T/whats-new-dir/whats-new.http" environment="test" />
@@ -56,7 +62,6 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "git-widget-placeholder": "Develop",
     "nodejs_package_manager_path": "npm",
     "settings.editor.selected.configurable": "swagger",
     "vue.rearranger.settings.migration": "true"
@@ -229,7 +234,7 @@
       <updated>1771590285423</updated>
       <workItem from="1771590287280" duration="10486000" />
       <workItem from="1771933749012" duration="752000" />
-      <workItem from="1771934668975" duration="385000" />
+      <workItem from="1771934668975" duration="1578000" />
     </task>
     <servers />
   </component>
