@@ -28,7 +28,7 @@ bld/
 Aegis-Link-VEIL/.DS_Store
 /AegisLink.Shared/obj/Debug
 /AegisLink.Shared/obj
-/Aegis-Link-VEIL/bin
+*/bin
 
 # .NET Core
 project.lock.json
@@ -47,6 +47,7 @@ ScaffoldingReadMe.txt
 ~$*
 *~
 CodeCoverage/
+.DS_Store
 
 # MSBuild Binary and Structured Log
 *.binlog
@@ -59,5 +60,3 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
-
-/Aegis-Link-VEIL/bin
