@@ -23,6 +23,7 @@ bld/
 [Ll]og/
 [Ll]ogs/
 
+<<<<<<< HEAD
 # Project Related
 Aegis-Link-VEIL/.DS_Store
 /AegisLink.Shared/obj/Debug
@@ -33,6 +34,8 @@ Aegis-Link-VEIL/.DS_Store
 .idea/.idea.Aegis-Link-VEIL/.idea/discord.xml
 .idea/.idea.Aegis-Link-VEIL/.idea/indexLayout.xml
 
+=======
+>>>>>>> 2bbdfd7cf212766007e1e5c85a7ecc85bedd4407
 # .NET Core
 project.lock.json
 project.fragment.lock.json
@@ -50,7 +53,10 @@ ScaffoldingReadMe.txt
 ~$*
 *~
 CodeCoverage/
+<<<<<<< HEAD
 .DS_Store
+=======
+>>>>>>> 2bbdfd7cf212766007e1e5c85a7ecc85bedd4407
 
 # MSBuild Binary and Structured Log
 *.binlog
@@ -62,6 +68,10 @@ CodeCoverage/
 # NUnit
 *.VisualState.xml
 TestResult.xml
+<<<<<<< HEAD
 nunit-*.xml
 Aegis-Link-VEIL.sln.DotSettings 2.user
 .idea/.idea.Aegis-Link-VEIL/.idea/workspace.xml
+=======
+nunit-*.xml
+>>>>>>> 2bbdfd7cf212766007e1e5c85a7ecc85bedd4407
