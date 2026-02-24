@@ -24,11 +24,14 @@ bld/
 [Ll]ogs/
 
 # Project Related
-
 Aegis-Link-VEIL/.DS_Store
 /AegisLink.Shared/obj/Debug
 /AegisLink.Shared/obj
 */bin
+
+# Specific Files
+.idea/.idea.Aegis-Link-VEIL/.idea/discord.xml
+.idea/.idea.Aegis-Link-VEIL/.idea/indexLayout.xml
 
 # .NET Core
 project.lock.json
