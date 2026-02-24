@@ -22,6 +22,12 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
+
+# Project Related
+
+Aegis-Link-VEIL/.DS_Store
+/AegisLink.Shared/obj/Debug
+/AegisLink.Shared/obj
 /Aegis-Link-VEIL/bin
 
 # .NET Core
@@ -53,3 +59,5 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+/Aegis-Link-VEIL/bin
