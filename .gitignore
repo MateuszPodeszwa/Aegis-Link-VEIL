@@ -63,3 +63,5 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+Aegis-Link-VEIL.sln.DotSettings 2.user
+.idea/.idea.Aegis-Link-VEIL/.idea/workspace.xml
