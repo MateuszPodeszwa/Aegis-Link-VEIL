@@ -1,11 +1,19 @@
 var builder = WebApplication.CreateBuilder(args);
 
 // --- Services ---
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? [];
+
+if (allowedOrigins.Length == 0 && builder.Environment.IsDevelopment())
+{
+    throw new InvalidOperationException(
+        "No CORS origins configured. Add at least one entry under 'AllowedOrigins' in appsettings.Development.json.");
+}
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("_myAllowSpecificOrigins", policy =>
     {
-        policy.WithOrigins("http://localhost:5150") 
+        policy.WithOrigins(allowedOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
