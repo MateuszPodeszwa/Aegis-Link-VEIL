@@ -1,6 +1,6 @@
-@WebApplication1_HostAddress = http://localhost:5162
+@AegisLink_Server_HostAddress = http://localhost:5162
 
-GET {{WebApplication1_HostAddress}}/weatherforecast/
+GET {{AegisLink_Server_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
