@@ -1,6 +1,90 @@
-@page "/Chat"
-<h3>Chat</h3>
+@page "/chat"
+@using Microsoft.AspNetCore.SignalR.Client
+@implements IAsyncDisposable
+@inject NavigationManager Navigation
+@inject IHttpClientFactory ClientFactory
+
+<h3>Aegis Link - Minimal Relay Setup</h3>
+
+<div>
+    <input @bind="sessionId" placeholder="Session ID" />
+    <button @onclick="JoinSession">Join Session</button>
+</div>
+
+<div style="margin-top: 20px;">
+    <input @bind="messageInput" placeholder="Type a message..." />
+    <button @onclick="SendMessage">Send</button>
+</div>
+
+<hr />
+<ul>
+    @foreach (var msg in messages)
+    {
+        <li>@msg</li>
+    }
+</ul>
 
 @code {
-    
+    private HubConnection? hubConnection;
+    private string sessionId = "12345";
+    private string messageInput = "";
+    private List<string> messages = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var client = ClientFactory.CreateClient("WebAPI");
+        var hubUrl = new Uri(client.BaseAddress!, "chatHub");
+        
+        // Replace with your actual API port
+        hubConnection = new HubConnectionBuilder()
+            // This dynamically builds the correct absolute URL
+            .WithUrl(hubUrl) 
+            .Build();
+
+        // Listen for incoming messages
+        hubConnection.On<string>("ReceiveMessage", (message) =>
+        {
+            messages.Add($"Partner: {message}");
+            InvokeAsync(StateHasChanged);
+        });
+
+        // Listen for partner connection alerts
+        hubConnection.On("UserJoined", () =>
+        {
+            messages.Add("System: A partner joined the secure session.");
+            InvokeAsync(StateHasChanged);
+        });
+
+        await hubConnection.StartAsync();
+    }
+
+    private async Task JoinSession()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.SendAsync("JoinSession", sessionId);
+            messages.Add($"System: You joined session {sessionId}");
+        }
+    }
+
+    private async Task SendMessage()
+    {
+        if (hubConnection is not null && !string.IsNullOrWhiteSpace(messageInput))
+        {
+            // Send to the API hub
+            await hubConnection.SendAsync("SendMessage", sessionId, messageInput);
+            
+            // Display it locally
+            messages.Add($"Me: {messageInput}");
+            messageInput = string.Empty; 
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
 }
