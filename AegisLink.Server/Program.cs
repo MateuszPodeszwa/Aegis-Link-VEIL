@@ -1,3 +1,5 @@
+using AegisLink.Server.Hubs;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // --- Services ---
@@ -26,6 +28,7 @@ var app = builder.Build();
 
 // --- Middleware ---
 app.UseHttpsRedirection();
+app.MapHub<SecureMessagingHub>("/chatHub"); 
 
 if (app.Environment.IsDevelopment())
 {
