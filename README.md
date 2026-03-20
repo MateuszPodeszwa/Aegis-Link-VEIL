@@ -21,7 +21,7 @@ The server acts solely as a blind relay. No cryptographic keys or plaintext mess
 *   **Identity Verification:** Integration with specific institutional requirements.
 
 ## Technical Stack
-*   **Client:** Blazor WebAssembly (Prograssive Web Application)
+*   **Client:** Blazor WebAssembly (Progressive Web Application)
 *   **Server:** ASP.NET Core Web API
 *   **Real-time Transport:** SignalR (WebSockets)
 *   **Cryptography:** ECDH (Key Exchange) & AES-GCM (Payload Encryption)
