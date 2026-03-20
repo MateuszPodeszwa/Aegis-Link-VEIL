@@ -42,17 +42,17 @@
             .Build();
 
         // Listen for incoming messages
-        hubConnection.On<string>("ReceiveMessage", (message) =>
+        hubConnection.On<string>("ReceiveMessage", async (message) =>
         {
             messages.Add($"Partner: {message}");
-            InvokeAsync(StateHasChanged);
+            await InvokeAsync(StateHasChanged);
         });
 
         // Listen for partner connection alerts
-        hubConnection.On("UserJoined", () =>
+        hubConnection.On("UserJoined", async () =>
         {
             messages.Add("System: A partner joined the secure session.");
-            InvokeAsync(StateHasChanged);
+            await InvokeAsync(StateHasChanged);
         });
 
         await hubConnection.StartAsync();
