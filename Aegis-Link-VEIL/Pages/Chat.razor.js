@@ -1,5 +1,2 @@
-export class Chat {
-  
-}
-
-window.Chat = Chat;
+// Reserved for future Chat component JS interop.
+// Currently intentionally empty to avoid shipping dead code.
