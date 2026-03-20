@@ -27,7 +27,7 @@ The server acts solely as a blind relay. No cryptographic keys or plaintext mess
 *   **Cryptography:** ECDH (Key Exchange) & AES-GCM (Payload Encryption)
 *   **Database:** 
     *   *Ephemeral Mode:* In-Memory / Redis (Subject to change)
-    *   *Audit Mode:* On device memmory. 
+    *   *Audit Mode:* On device memory. 
       
 ## Development Setup
 1.  **Prerequisites:** .NET 10 SDK
