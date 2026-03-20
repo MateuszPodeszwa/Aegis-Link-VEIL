@@ -29,6 +29,7 @@ builder.Services.AddSignalR();
 
 builder.Services.AddResponseCompression(opts =>
 {
+    opts.EnableForHttps = true;
     opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
         [ "application/octet-stream" ]);
 });
