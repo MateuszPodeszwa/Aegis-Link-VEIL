@@ -29,5 +29,5 @@ If you discover a potential leak, broken encryption, or logic flaw:
 3.  Draft a fix in a private branch (`hotfix/security-patch`).
 
 ## Cryptographic Standards
-*   **Randomness:** Use `System.Security.Cryptography.RandomNumberGenerator`, NEVER `System.Random`. (Depracitated)
+*   **Randomness:** Use `System.Security.Cryptography.RandomNumberGenerator`, NEVER `System.Random`. (Deprecated)
 *   **Key Size:** Minimum 256-bit for AES; Minimum 256-bit for Elliptic Curves.
