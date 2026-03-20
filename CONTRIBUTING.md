@@ -8,7 +8,7 @@ We utilise the **Feature Branch** workflow.
 *   **Backlog Feature Branches:** Pattern: `feature-[backlog_ID]/secure-handshake`, Example: `feature-AL-002/UI-Update`, etc.
 
 ### Information to the Team and Developers working on this project.
-Please reffer to the backlog to create new branches. If a feature do not exist in a backlog use the default branches naming. But, if a feature exist in the backlog insluding a backlog feature ID in a branch name (as specified above) is mandatory.
+Please refer to the backlog when creating new branches. If a feature does not exist in the backlog, use the default feature branch naming. If a feature exists in the backlog, including the backlog feature ID in the branch name (as specified above) is mandatory.
 
 ## 2. Commit Standards
 Commits must be clear and atomic.
