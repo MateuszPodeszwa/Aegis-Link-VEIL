@@ -1,3 +1,6 @@
+using AegisLink.Server.Hubs;
+using Microsoft.AspNetCore.ResponseCompression;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // --- Services ---
@@ -22,9 +25,20 @@ builder.Services.AddCors(options =>
 builder.Services.AddControllers(); // This finds your new Controller
 builder.Services.AddOpenApi();
 
+builder.Services.AddSignalR();
+
+builder.Services.AddResponseCompression(opts =>
+{
+    opts.EnableForHttps = true;
+    opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+        [ "application/octet-stream" ]);
+});
+
 var app = builder.Build();
 
 // --- Middleware ---
+app.UseResponseCompression();
+app.MapHub<SecureMessagingHub>("/chatHub"); 
 app.UseHttpsRedirection();
 
 if (app.Environment.IsDevelopment())
