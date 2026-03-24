@@ -10,10 +10,11 @@ internal class Program
         builder.RootComponents.Add<App>("#app");
         builder.RootComponents.Add<HeadOutlet>("head::after");
 
+        builder.Services.AddScoped<ChatStore>();
         builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
         builder.Services.AddHttpClient("WebAPI", client => 
         {
-            client.BaseAddress = new Uri("http://localhost:5162");
+            client.BaseAddress = new Uri("https://localhost:7069");
         });
 
         await builder.Build().RunAsync();

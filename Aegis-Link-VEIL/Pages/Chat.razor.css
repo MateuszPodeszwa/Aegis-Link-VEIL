@@ -1,0 +1,92 @@
+.aegis-root {
+    background: linear-gradient(170deg, #2d1f6e 0%, #1a1240 30%, #0d0d14 70%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Trebuchet MS', sans-serif;
+    color: #e8e6f0;
+    padding: 0;
+    margin: 0;
+    position: relative; /* make input bar absolute relative to root */
+}
+
+.top-bar {
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    box-sizing: border-box;
+}
+
+.back-btn {
+    background: transparent;
+    border: none;
+    color: #e8e6f0;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.app-name {
+    font-size: clamp(24px, 5vw, 32px);
+    font-weight: 700;
+    color: #f0eeff;
+}
+
+.messages-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem 1.5rem;
+}
+
+.messages-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.message-input-bar {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: rgba(13, 10, 25, 0.95);
+    border-top: 0.5px solid #1f1d2e;
+    width: 100%; /* take full width of parent div */
+    box-sizing: border-box;
+    margin-top: auto; /* push to bottom of flex container */
+}
+
+.message-input {
+    flex: 1;
+    padding: 0.8rem 1rem;
+    border-radius: 20px;
+    border: 1px solid #5b4ef0;
+    background-color: rgba(42, 36, 80, 0.4);
+    color: #fff;
+    font-size: clamp(0.9rem, 1.5vw, 1rem);
+    outline: none;
+}
+
+.send-btn {
+    padding: 0.8rem 1rem;
+    border-radius: 50%;
+    border: none;
+    background-color: #5b4ef0;
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+    min-width: 50px;
+    min-height: 50px;
+}
+
+.send-btn:hover {
+    background-color: #7063f5;
+}
+
+.send-btn:active {
+    transform: scale(0.95);
+}
