@@ -3,6 +3,42 @@
   "WorkspaceRootPath": "C:\\Users\\coltzy\\Desktop\\Aegis-Link-VEIL\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{8ED9F18E-EC03-4D40-A9B9-048D89BA84D9}|Aegis-Link-VEIL\\Aegis-Link-VEIL.csproj|c:\\users\\coltzy\\desktop\\aegis-link-veil\\aegis-link-veil\\pages\\chat.razor.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
+      "RelativeMoniker": "D:0:0:{8ED9F18E-EC03-4D40-A9B9-048D89BA84D9}|Aegis-Link-VEIL\\Aegis-Link-VEIL.csproj|solutionrelative:aegis-link-veil\\pages\\chat.razor.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8ED9F18E-EC03-4D40-A9B9-048D89BA84D9}|Aegis-Link-VEIL\\Aegis-Link-VEIL.csproj|c:\\users\\coltzy\\desktop\\aegis-link-veil\\aegis-link-veil\\pages\\chat.razor.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{8ED9F18E-EC03-4D40-A9B9-048D89BA84D9}|Aegis-Link-VEIL\\Aegis-Link-VEIL.csproj|solutionrelative:aegis-link-veil\\pages\\chat.razor.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8ED9F18E-EC03-4D40-A9B9-048D89BA84D9}|Aegis-Link-VEIL\\Aegis-Link-VEIL.csproj|c:\\users\\coltzy\\desktop\\aegis-link-veil\\aegis-link-veil\\pages\\chat.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8ED9F18E-EC03-4D40-A9B9-048D89BA84D9}|Aegis-Link-VEIL\\Aegis-Link-VEIL.csproj|solutionrelative:aegis-link-veil\\pages\\chat.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8ED9F18E-EC03-4D40-A9B9-048D89BA84D9}|Aegis-Link-VEIL\\Aegis-Link-VEIL.csproj|c:\\users\\coltzy\\desktop\\aegis-link-veil\\aegis-link-veil\\pages\\chat.razor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8ED9F18E-EC03-4D40-A9B9-048D89BA84D9}|Aegis-Link-VEIL\\Aegis-Link-VEIL.csproj|solutionrelative:aegis-link-veil\\pages\\chat.razor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8ED9F18E-EC03-4D40-A9B9-048D89BA84D9}|Aegis-Link-VEIL\\Aegis-Link-VEIL.csproj|c:\\users\\coltzy\\desktop\\aegis-link-veil\\aegis-link-veil\\pages\\contacts.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8ED9F18E-EC03-4D40-A9B9-048D89BA84D9}|Aegis-Link-VEIL\\Aegis-Link-VEIL.csproj|solutionrelative:aegis-link-veil\\pages\\contacts.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8ED9F18E-EC03-4D40-A9B9-048D89BA84D9}|Aegis-Link-VEIL\\Aegis-Link-VEIL.csproj|c:\\users\\coltzy\\desktop\\aegis-link-veil\\aegis-link-veil\\layout\\navmenu.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8ED9F18E-EC03-4D40-A9B9-048D89BA84D9}|Aegis-Link-VEIL\\Aegis-Link-VEIL.csproj|solutionrelative:aegis-link-veil\\layout\\navmenu.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8ED9F18E-EC03-4D40-A9B9-048D89BA84D9}|Aegis-Link-VEIL\\Aegis-Link-VEIL.csproj|c:\\users\\coltzy\\desktop\\aegis-link-veil\\aegis-link-veil\\models\\chatsession.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8ED9F18E-EC03-4D40-A9B9-048D89BA84D9}|Aegis-Link-VEIL\\Aegis-Link-VEIL.csproj|solutionrelative:aegis-link-veil\\models\\chatsession.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8ED9F18E-EC03-4D40-A9B9-048D89BA84D9}|Aegis-Link-VEIL\\Aegis-Link-VEIL.csproj|c:\\users\\coltzy\\desktop\\aegis-link-veil\\aegis-link-veil\\models\\chatmessage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8ED9F18E-EC03-4D40-A9B9-048D89BA84D9}|Aegis-Link-VEIL\\Aegis-Link-VEIL.csproj|solutionrelative:aegis-link-veil\\models\\chatmessage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8ED9F18E-EC03-4D40-A9B9-048D89BA84D9}|Aegis-Link-VEIL\\Aegis-Link-VEIL.csproj|c:\\users\\coltzy\\desktop\\aegis-link-veil\\aegis-link-veil\\services\\chatstore.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8ED9F18E-EC03-4D40-A9B9-048D89BA84D9}|Aegis-Link-VEIL\\Aegis-Link-VEIL.csproj|solutionrelative:aegis-link-veil\\services\\chatstore.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{CF456ADF-66FF-4F83-8578-138909346313}|AegisLink.Server\\AegisLink.Server.csproj|c:\\users\\coltzy\\desktop\\aegis-link-veil\\aegislink.server\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{CF456ADF-66FF-4F83-8578-138909346313}|AegisLink.Server\\AegisLink.Server.csproj|solutionrelative:aegislink.server\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
@@ -26,28 +62,137 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 3,
           "Children": [
             {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Chat.razor.js",
+              "DocumentMoniker": "C:\\Users\\coltzy\\Desktop\\Aegis-Link-VEIL\\Aegis-Link-VEIL\\Pages\\Chat.razor.js",
+              "RelativeDocumentMoniker": "Aegis-Link-VEIL\\Pages\\Chat.razor.js",
+              "ToolTip": "C:\\Users\\coltzy\\Desktop\\Aegis-Link-VEIL\\Aegis-Link-VEIL\\Pages\\Chat.razor.js",
+              "RelativeToolTip": "Aegis-Link-VEIL\\Pages\\Chat.razor.js",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2026-03-26T14:28:40.719Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Contacts.razor",
+              "DocumentMoniker": "C:\\Users\\coltzy\\Desktop\\Aegis-Link-VEIL\\Aegis-Link-VEIL\\Pages\\Contacts.razor",
+              "RelativeDocumentMoniker": "Aegis-Link-VEIL\\Pages\\Contacts.razor",
+              "ToolTip": "C:\\Users\\coltzy\\Desktop\\Aegis-Link-VEIL\\Aegis-Link-VEIL\\Pages\\Contacts.razor",
+              "RelativeToolTip": "Aegis-Link-VEIL\\Pages\\Contacts.razor",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-03-26T14:25:28.829Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "NavMenu.razor",
+              "DocumentMoniker": "C:\\Users\\coltzy\\Desktop\\Aegis-Link-VEIL\\Aegis-Link-VEIL\\Layout\\NavMenu.razor",
+              "RelativeDocumentMoniker": "Aegis-Link-VEIL\\Layout\\NavMenu.razor",
+              "ToolTip": "C:\\Users\\coltzy\\Desktop\\Aegis-Link-VEIL\\Aegis-Link-VEIL\\Layout\\NavMenu.razor",
+              "RelativeToolTip": "Aegis-Link-VEIL\\Layout\\NavMenu.razor",
+              "ViewState": "AgIAABgAAAAAAAAAAAAAABAAAAAjAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-03-26T14:23:33.771Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "Chat.razor.css",
+              "DocumentMoniker": "C:\\Users\\coltzy\\Desktop\\Aegis-Link-VEIL\\Aegis-Link-VEIL\\Pages\\Chat.razor.css",
+              "RelativeDocumentMoniker": "Aegis-Link-VEIL\\Pages\\Chat.razor.css",
+              "ToolTip": "C:\\Users\\coltzy\\Desktop\\Aegis-Link-VEIL\\Aegis-Link-VEIL\\Pages\\Chat.razor.css",
+              "RelativeToolTip": "Aegis-Link-VEIL\\Pages\\Chat.razor.css",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAI0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
+              "WhenOpened": "2026-03-25T21:55:03.545Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Chat.razor.cs",
+              "DocumentMoniker": "C:\\Users\\coltzy\\Desktop\\Aegis-Link-VEIL\\Aegis-Link-VEIL\\Pages\\Chat.razor.cs",
+              "RelativeDocumentMoniker": "Aegis-Link-VEIL\\Pages\\Chat.razor.cs",
+              "ToolTip": "C:\\Users\\coltzy\\Desktop\\Aegis-Link-VEIL\\Aegis-Link-VEIL\\Pages\\Chat.razor.cs",
+              "RelativeToolTip": "Aegis-Link-VEIL\\Pages\\Chat.razor.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-25T21:55:01.992Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Chat.razor",
+              "DocumentMoniker": "C:\\Users\\coltzy\\Desktop\\Aegis-Link-VEIL\\Aegis-Link-VEIL\\Pages\\Chat.razor",
+              "RelativeDocumentMoniker": "Aegis-Link-VEIL\\Pages\\Chat.razor",
+              "ToolTip": "C:\\Users\\coltzy\\Desktop\\Aegis-Link-VEIL\\Aegis-Link-VEIL\\Pages\\Chat.razor",
+              "RelativeToolTip": "Aegis-Link-VEIL\\Pages\\Chat.razor",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAACAAAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-03-25T21:54:56.945Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "ChatSession.cs",
+              "DocumentMoniker": "C:\\Users\\coltzy\\Desktop\\Aegis-Link-VEIL\\Aegis-Link-VEIL\\Models\\ChatSession.cs",
+              "RelativeDocumentMoniker": "Aegis-Link-VEIL\\Models\\ChatSession.cs",
+              "ToolTip": "C:\\Users\\coltzy\\Desktop\\Aegis-Link-VEIL\\Aegis-Link-VEIL\\Models\\ChatSession.cs",
+              "RelativeToolTip": "Aegis-Link-VEIL\\Models\\ChatSession.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-25T21:54:54.545Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "ChatMessage.cs",
+              "DocumentMoniker": "C:\\Users\\coltzy\\Desktop\\Aegis-Link-VEIL\\Aegis-Link-VEIL\\Models\\ChatMessage.cs",
+              "RelativeDocumentMoniker": "Aegis-Link-VEIL\\Models\\ChatMessage.cs",
+              "ToolTip": "C:\\Users\\coltzy\\Desktop\\Aegis-Link-VEIL\\Aegis-Link-VEIL\\Models\\ChatMessage.cs",
+              "RelativeToolTip": "Aegis-Link-VEIL\\Models\\ChatMessage.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-25T21:54:52.767Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "ChatStore.cs",
+              "DocumentMoniker": "C:\\Users\\coltzy\\Desktop\\Aegis-Link-VEIL\\Aegis-Link-VEIL\\Services\\ChatStore.cs",
+              "RelativeDocumentMoniker": "Aegis-Link-VEIL\\Services\\ChatStore.cs",
+              "ToolTip": "C:\\Users\\coltzy\\Desktop\\Aegis-Link-VEIL\\Aegis-Link-VEIL\\Services\\ChatStore.cs",
+              "RelativeToolTip": "Aegis-Link-VEIL\\Services\\ChatStore.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-25T21:54:48.681Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
               "Title": "appsettings.Development.json",
               "DocumentMoniker": "C:\\Users\\coltzy\\Desktop\\Aegis-Link-VEIL\\AegisLink.Server\\appsettings.Development.json",
               "RelativeDocumentMoniker": "AegisLink.Server\\appsettings.Development.json",
               "ToolTip": "C:\\Users\\coltzy\\Desktop\\Aegis-Link-VEIL\\AegisLink.Server\\appsettings.Development.json",
               "RelativeToolTip": "AegisLink.Server\\appsettings.Development.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-03-24T23:11:27.61Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-24T23:11:27.61Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 10,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\coltzy\\Desktop\\Aegis-Link-VEIL\\AegisLink.Server\\Program.cs",
               "RelativeDocumentMoniker": "AegisLink.Server\\Program.cs",
@@ -55,12 +200,11 @@
               "RelativeToolTip": "AegisLink.Server\\Program.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-24T23:11:10.865Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-24T23:11:10.865Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 11,
               "Title": "appsettings.json",
               "DocumentMoniker": "C:\\Users\\coltzy\\Desktop\\Aegis-Link-VEIL\\AegisLink.Server\\appsettings.json",
               "RelativeDocumentMoniker": "AegisLink.Server\\appsettings.json",
@@ -68,12 +212,11 @@
               "RelativeToolTip": "AegisLink.Server\\appsettings.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-03-24T23:11:09.118Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-24T23:11:09.118Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 12,
               "Title": "WebApplication1.http",
               "DocumentMoniker": "C:\\Users\\coltzy\\Desktop\\Aegis-Link-VEIL\\AegisLink.Server\\WebApplication1.http",
               "RelativeDocumentMoniker": "AegisLink.Server\\WebApplication1.http",
@@ -81,8 +224,7 @@
               "RelativeToolTip": "AegisLink.Server\\WebApplication1.http",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003502|",
-              "WhenOpened": "2026-03-24T23:11:08.172Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-24T23:11:08.172Z"
             }
           ]
         }

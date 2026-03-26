@@ -16,7 +16,19 @@
         <ul class="messages-list">
             @foreach (var msg in chatSession?.Messages ?? Enumerable.Empty<ChatMessage>())
             {
-                <li>@($"{msg.From}: {msg.Content}")</li>
+                var messageClass = msg.From switch
+                {
+                    "Me" => "message me",
+                    "Partner" => "message partner",
+                    "System" => "message system",
+                    _ => "message"
+                };
+
+                <li class="@messageClass">
+                    <div class="bubble">
+                        @msg.Content
+                    </div>
+                </li>
             }
         </ul>
     </div>
