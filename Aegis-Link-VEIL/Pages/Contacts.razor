@@ -25,18 +25,16 @@
         {
             @foreach (var chat in ChatStore.Chats)
             {
-                <li class="contact-card">
-                    <NavLink href="@($"/chat/{chat.SessionKey}")">
-                        <div class="contact-text">
-                            <div class="contact-name">@chat.PartnerName</div>
-                            <div class="contact-key">
-                                <span class="lock-wrapper">
-                                    <svg class="lock-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                        <path fill="currentColor" d="M12 2C9.243 2 7 4.243 7 7v3H6c-1.103 0-2 .897-2 2v8c0 1.103.897 2 2 2h12c1.103 0 2-.897 2-2v-8c0-1.103-.897-2-2-2h-1V7c0-2.757-2.243-5-5-5zm-3 5c0-1.654 1.346-3 3-3s3 1.346 3 3v3H9V7zm9 5v8H6v-8h12z" />
-                                    </svg>
-                                    @chat.SessionKey
-                                </span>
-                            </div>
+                <li class="contact-card" @key="chat.SessionKey">
+                    <NavLink class="contact-link" href="@($"/chat/{chat.SessionKey}")">
+                        <div class="contact-name">@chat.PartnerName</div>
+                        <div class="contact-key">
+                            <span class="lock-wrapper">
+                                <svg class="lock-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                                    <path d="M12 2C9.243 2 7 4.243 7 7v3H6c-1.103 0-2 .897-2 2v8c0 1.103.897 2 2 2h12c1.103 0 2-.897 2-2v-8c0-1.103-.897-2-2-2h-1V7c0-2.757-2.243-5-5-5zm-3 5c0-1.654 1.346-3 3-3s3 1.346 3 3v3H9V7zm9 5v8H6v-8h12z" />
+                                </svg>
+                                @chat.SessionKey
+                            </span>
                         </div>
                     </NavLink>
                 </li>
@@ -60,6 +58,11 @@
 
     private async Task CreateSession()
     {
+        if (string.IsNullOrWhiteSpace(sessionName) || string.IsNullOrWhiteSpace(sessionKey))
+        {
+            return;
+        }
+
         ChatStore.CreateChat(sessionKey, sessionName);
         await ChatStore.SaveAsync();
         sessionKey = "";

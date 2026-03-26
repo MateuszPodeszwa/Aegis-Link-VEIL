@@ -8,7 +8,11 @@
 
 <div class="aegis-root">
     <div class="top-bar">
-        <button class="back-btn" @onclick="GoBack">&#8592;</button>
+        <button class="back-btn" @onclick="GoBack">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+            </svg>
+        </button>
         <div class="app-name">Aegis Link</div>
     </div>
 
@@ -56,17 +60,12 @@
     protected override async Task OnInitializedAsync()
     {
         await ChatStore.InitializeAsync();
+        chatSession = ChatStore.GetChat(sessionId);
 
-        if (!string.IsNullOrWhiteSpace(sessionId))
+        if (string.IsNullOrWhiteSpace(sessionId) || chatSession == null)
         {
-            chatSession = ChatStore.GetChat(sessionId);
-
-            // Redirect back if session does not exist
-            if (chatSession == null)
-            {
-                Navigation.NavigateTo("/");
-                return;
-            }
+            Navigation.NavigateTo("/");
+            return;
         }
 
         var client = ClientFactory.CreateClient("WebAPI");
@@ -102,7 +101,7 @@
     // Send a join session message to the hub
     private async Task JoinSession()
     {
-        if (hubConnection is not null)
+        if (hubConnection is not null && chatSession is not null)
         {
             await hubConnection.SendAsync("JoinSession", sessionId);
             chatSession.StoreMessage($"You joined session {sessionId}", "System");
@@ -113,7 +112,7 @@
     // Send a chat message
     private async Task SendMessage()
     {
-        if (hubConnection is not null && !string.IsNullOrWhiteSpace(messageInput))
+        if (hubConnection is not null && chatSession is not null && !string.IsNullOrWhiteSpace(messageInput))
         {
             await hubConnection.SendAsync("SendMessage", sessionId, messageInput);
             chatSession.StoreMessage(messageInput, "Me");
