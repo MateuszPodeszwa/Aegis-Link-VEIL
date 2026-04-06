@@ -22,9 +22,9 @@
             {
                 var messageClass = msg.From switch
                 {
-                    "Me" => "message me",
-                    "Partner" => "message partner",
-                    "System" => "message system",
+                    MessageSender.Me => "message me",
+                    MessageSender.Partner => "message partner",
+                    MessageSender.System => "message system",
                     _ => "message"
                 };
 
@@ -50,7 +50,7 @@
 
 @code {
     [Parameter]
-    public string sessionId { get; set; } = string.Empty;
+    public string SessionId { get; set; } = string.Empty;
 
     private ChatSession? chatSession;
     private HubConnection? hubConnection;
@@ -60,9 +60,9 @@
     protected override async Task OnInitializedAsync()
     {
         await ChatStore.InitializeAsync();
-        chatSession = ChatStore.GetChat(sessionId);
+        chatSession = ChatStore.GetChat(SessionId);
 
-        if (string.IsNullOrWhiteSpace(sessionId) || chatSession == null)
+        if (string.IsNullOrWhiteSpace(SessionId) || chatSession == null)
         {
             Navigation.NavigateTo("/");
             return;
@@ -79,7 +79,7 @@
         // Listen for incoming messages
         hubConnection.On<string>("ReceiveMessage", async (message) =>
         {
-            chatSession.StoreMessage(message, "Partner");
+            chatSession.StoreMessage(message, MessageSender.Partner);
             await ChatStore.SaveAsync();
             await InvokeAsync(StateHasChanged);
         });
@@ -87,7 +87,7 @@
         // Listen for partner join events
         hubConnection.On("UserJoined", async () =>
         {
-            chatSession.StoreMessage("A partner joined the secure session.", "System");
+            chatSession.StoreMessage("A partner joined the secure session.", MessageSender.System);
             await ChatStore.SaveAsync();
             await InvokeAsync(StateHasChanged);
         });
@@ -103,8 +103,8 @@
     {
         if (hubConnection is not null && chatSession is not null)
         {
-            await hubConnection.SendAsync("JoinSession", sessionId);
-            chatSession.StoreMessage($"You joined session {sessionId}", "System");
+            await hubConnection.SendAsync("JoinSession", SessionId);
+            chatSession.StoreMessage($"You joined session {SessionId}", MessageSender.System);
             await ChatStore.SaveAsync();
         }
     }
@@ -114,8 +114,8 @@
     {
         if (hubConnection is not null && chatSession is not null && !string.IsNullOrWhiteSpace(messageInput))
         {
-            await hubConnection.SendAsync("SendMessage", sessionId, messageInput);
-            chatSession.StoreMessage(messageInput, "Me");
+            await hubConnection.SendAsync("SendMessage", SessionId, messageInput);
+            chatSession.StoreMessage(messageInput, MessageSender.Me);
             await ChatStore.SaveAsync();
             messageInput = string.Empty;
         }

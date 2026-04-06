@@ -4,7 +4,7 @@
     public string SessionKey { get; set; } = string.Empty;
     public List<ChatMessage> Messages { get; set; } = new();
 
-    public ChatMessage StoreMessage(string content, string from)
+    public ChatMessage StoreMessage(string content, MessageSender from)
     {
         ChatMessage message = new ChatMessage
         {

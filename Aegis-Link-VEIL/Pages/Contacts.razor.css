@@ -56,6 +56,13 @@
     object-fit: contain;
 }
 
+.form-label {
+    align-self: flex-start;
+    font-size: clamp(0.8rem, 1.3vw, 0.9rem);
+    color: #b3aef0;
+    margin-bottom: -0.5rem;
+}
+
 .form-input {
     width: 100%;
     padding: 0.8rem 1rem;
