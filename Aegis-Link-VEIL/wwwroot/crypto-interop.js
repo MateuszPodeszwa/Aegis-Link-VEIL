@@ -48,5 +48,37 @@
 
     clearIdentity: function () {
         localStorage.removeItem('aegis_identity');
+    },
+
+    deriveKey: async function (sessionKeyString) {
+        const encoder = new TextEncoder();
+        const keyData = encoder.encode(sessionKeyString);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', keyData);
+        return new Uint8Array(hashBuffer);
+    },
+
+    encryptMessage: async function (plaintext, sessionKeyString) {
+        const keyBytes = await window.aegisCrypto.deriveKey(sessionKeyString);
+        const nonce = nacl.randomBytes(nacl.secretbox.nonceLength);
+        const messageBytes = nacl.util.decodeUTF8(plaintext);
+        const encrypted = nacl.secretbox(messageBytes, nonce, keyBytes);
+        const combined = new Uint8Array(nonce.length + encrypted.length);
+        combined.set(nonce);
+        combined.set(encrypted, nonce.length);
+        return btoa(String.fromCharCode(...combined));
+    },
+
+    decryptMessage: async function (ciphertextB64, sessionKeyString) {
+        try {
+            const keyBytes = await window.aegisCrypto.deriveKey(sessionKeyString);
+            const combined = Uint8Array.from(atob(ciphertextB64), c => c.charCodeAt(0));
+            const nonce = combined.slice(0, nacl.secretbox.nonceLength);
+            const ciphertext = combined.slice(nacl.secretbox.nonceLength);
+            const decrypted = nacl.secretbox.open(ciphertext, nonce, keyBytes);
+            if (!decrypted) return null;
+            return nacl.util.encodeUTF8(decrypted);
+        } catch {
+            return null;
+        }
     }
 };

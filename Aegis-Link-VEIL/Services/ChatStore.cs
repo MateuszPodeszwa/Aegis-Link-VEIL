@@ -5,7 +5,7 @@ public class ChatStore
 {
     private readonly IJSRuntime _js;
     private const string StorageKey = "aegis_chats";
-    private bool _initialized = false;
+    private Task? _initTask;
 
     public List<ChatSession> Chats { get; private set; } = new();
 
@@ -14,11 +14,13 @@ public class ChatStore
         _js = js;
     }
 
-    public async Task InitializeAsync()
+    public Task InitializeAsync()
     {
-        if (_initialized) return;
-        _initialized = true;
+        return _initTask ??= InitializeCoreAsync();
+    }
 
+    private async Task InitializeCoreAsync()
+    {
         var json = await _js.InvokeAsync<string>("sessionStorage.getItem", StorageKey);
 
         if (!string.IsNullOrEmpty(json))

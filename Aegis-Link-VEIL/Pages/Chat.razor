@@ -5,6 +5,7 @@
 @implements IAsyncDisposable
 @inject NavigationManager Navigation
 @inject IHttpClientFactory ClientFactory
+@inject IJSRuntime JS
 
 <div class="aegis-root">
     <div class="top-bar">
@@ -13,7 +14,7 @@
                 <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
             </svg>
         </button>
-        <div class="app-name">Aegis Link</div>
+        <div class="app-name">@(chatSession?.PartnerName ?? "Aegis Link")</div>
     </div>
 
     <div class="messages-container">
@@ -77,11 +78,21 @@
             .Build();
 
         // Listen for incoming messages
-        hubConnection.On<string>("ReceiveMessage", async (message) =>
+        hubConnection.On<string>("ReceiveMessage", async (payload) =>
         {
-            chatSession.StoreMessage(message, MessageSender.Partner);
-            await ChatStore.SaveAsync();
-            await InvokeAsync(StateHasChanged);
+            if (chatSession is null) return;
+            await InvokeAsync(async () =>
+            {
+                var decrypted = await JS.InvokeAsync<string?>(
+                    "aegisCrypto.decryptMessage",
+                    payload,
+                    chatSession.SessionKey);
+
+                var displayText = decrypted ?? "[message could not be decrypted]";
+                chatSession.StoreMessage(displayText, MessageSender.Partner);
+                await ChatStore.SaveAsync();
+                StateHasChanged();
+            });
         });
 
         // Listen for partner join events
@@ -114,8 +125,14 @@
     {
         if (hubConnection is not null && chatSession is not null && !string.IsNullOrWhiteSpace(messageInput))
         {
-            await hubConnection.SendAsync("SendMessage", SessionId, messageInput);
-            chatSession.StoreMessage(messageInput, MessageSender.Me);
+            var plaintext = messageInput;
+            var ciphertext = await JS.InvokeAsync<string>(
+                "aegisCrypto.encryptMessage",
+                plaintext,
+                chatSession.SessionKey);
+
+            await hubConnection.SendAsync("SendMessage", SessionId, ciphertext);
+            chatSession.StoreMessage(plaintext, MessageSender.Me);
             await ChatStore.SaveAsync();
             messageInput = string.Empty;
         }
