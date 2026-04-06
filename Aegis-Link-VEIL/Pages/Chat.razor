@@ -15,6 +15,12 @@
             </svg>
         </button>
         <div class="app-name">@(chatSession?.PartnerName ?? "Aegis Link")</div>
+        @if (chatSession is not null)
+        {
+            <div style="font-size: 11px; font-family: 'Courier New'; color: #4caf50; margin-left: auto; padding-right: 1rem; opacity: 0.8;">
+                @chatSession.PartnerAegisId
+            </div>
+        }
     </div>
 
     @if (connectionError is not null)
@@ -68,7 +74,9 @@
     private string connectionStatus = "Connecting...";
     private string? connectionError;
 
-    // Initialize the component and setup the hub connection
+    // ECDH-derived shared key — computed once on init, never transmitted
+    private string? sharedKey;
+
     protected override async Task OnInitializedAsync()
     {
         await ChatStore.InitializeAsync();
@@ -80,10 +88,22 @@
             return;
         }
 
+        // Load own secret key from localStorage and derive the ECDH shared key
+        var identity = await JS.InvokeAsync<StoredIdentity?>("aegisCrypto.loadIdentity");
+        if (identity is null)
+        {
+            connectionError = "No local identity found. Return to home and create an account.";
+            return;
+        }
+
+        sharedKey = await JS.InvokeAsync<string>(
+            "aegisCrypto.computeSharedKey",
+            identity.SecretKey,
+            chatSession.PartnerPublicKey);
+
         var client = ClientFactory.CreateClient("WebAPI");
         var hubUrl = new Uri(client.BaseAddress!, "chatHub");
 
-        // Create the hub connection
         hubConnection = new HubConnectionBuilder()
             .WithUrl(hubUrl)
             .WithAutomaticReconnect()
@@ -101,16 +121,15 @@
             return InvokeAsync(StateHasChanged);
         };
 
-        // Listen for incoming messages
         hubConnection.On<string>("ReceiveMessage", async (payload) =>
         {
-            if (chatSession is null) return;
+            if (chatSession is null || sharedKey is null) return;
             await InvokeAsync(async () =>
             {
                 var decrypted = await JS.InvokeAsync<string?>(
-                    "aegisCrypto.decryptMessage",
+                    "aegisCrypto.boxDecrypt",
                     payload,
-                    chatSession.SessionKey);
+                    sharedKey);
 
                 var displayText = decrypted ?? "[message could not be decrypted]";
                 chatSession.StoreMessage(displayText, MessageSender.Partner);
@@ -119,11 +138,10 @@
             });
         });
 
-        // Listen for partner join events
         hubConnection.On("UserJoined", async () =>
         {
             if (chatSession is null) return;
-            chatSession.StoreMessage("A partner joined the secure session.", MessageSender.System);
+            chatSession.StoreMessage("Partner joined the secure session.", MessageSender.System);
             await ChatStore.SaveAsync();
             await InvokeAsync(StateHasChanged);
         });
@@ -144,7 +162,6 @@
         }
     }
 
-    // Send a join session message to the hub
     private async Task JoinSession()
     {
         if (hubConnection is not null && chatSession is not null)
@@ -155,27 +172,27 @@
         }
     }
 
-    // Send a chat message
     private async Task SendMessage()
     {
-        if (hubConnection is not null && chatSession is not null
-            && hubConnection.State == HubConnectionState.Connected
-            && !string.IsNullOrWhiteSpace(messageInput))
-        {
-            var plaintext = messageInput;
-            var ciphertext = await JS.InvokeAsync<string>(
-                "aegisCrypto.encryptMessage",
-                plaintext,
-                chatSession.SessionKey);
+        if (hubConnection is null || chatSession is null || sharedKey is null
+            || hubConnection.State != HubConnectionState.Connected
+            || string.IsNullOrWhiteSpace(messageInput))
+            return;
 
-            await hubConnection.SendAsync("SendMessage", SessionId, ciphertext);
-            chatSession.StoreMessage(plaintext, MessageSender.Me);
-            await ChatStore.SaveAsync();
-            messageInput = string.Empty;
-        }
+        var plaintext = messageInput;
+
+        // Encrypt with ECDH-derived key — server only ever sees ciphertext
+        var ciphertext = await JS.InvokeAsync<string>(
+            "aegisCrypto.boxEncrypt",
+            plaintext,
+            sharedKey);
+
+        await hubConnection.SendAsync("SendMessage", SessionId, ciphertext);
+        chatSession.StoreMessage(plaintext, MessageSender.Me);
+        await ChatStore.SaveAsync();
+        messageInput = string.Empty;
     }
 
-    // Dispose hub connection
     public async ValueTask DisposeAsync()
     {
         if (hubConnection is not null)
@@ -188,4 +205,6 @@
     {
         Navigation.NavigateTo("/contacts");
     }
+
+    private record StoredIdentity(string AegisId, string PublicKey, string SecretKey);
 }

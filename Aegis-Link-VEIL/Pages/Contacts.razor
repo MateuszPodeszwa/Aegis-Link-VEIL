@@ -3,6 +3,9 @@
 @inject ChatStore ChatStore
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
+@inject IHttpClientFactory ClientFactory
+@using AegisLink.Shared
+@using System.Net.Http.Json
 
 <PageTitle>Aegis Link</PageTitle>
 
@@ -15,10 +18,18 @@
     </div>
 
     <div class="connection-form">
-        <label for="sessionNameInput" class="form-label">Partner Name</label>
-        <input id="sessionNameInput" @bind="sessionName" placeholder="Enter partner name" class="form-input" />
+        <label for="partnerAegisIdInput" class="form-label">Partner Aegis ID</label>
+        <input id="partnerAegisIdInput"
+               @bind="partnerAegisId"
+               placeholder="8-character Aegis ID (e.g. RWIMVBT2)"
+               class="form-input"
+               maxlength="8"
+               style="text-transform: uppercase; letter-spacing: 0.12em;" />
 
-        <label class="form-label">Session Key</label>
+        <label for="sessionNameInput" class="form-label" style="margin-top: 0.75rem;">Partner Name</label>
+        <input id="sessionNameInput" @bind="sessionName" placeholder="Display name for this contact" class="form-input" />
+
+        <label class="form-label" style="margin-top: 0.75rem;">Session Key</label>
         <div class="key-group">
             <input @bind="sessionKey" placeholder="Shared session key" class="form-input key-input" />
             <button class="key-action-btn" @onclick="GenerateKey" title="Generate new key">
@@ -48,11 +59,18 @@
             }
             else
             {
-                <span>Both parties need the same key. Copy and share it securely.</span>
+                <span>Both parties need the same session key AND each other's Aegis ID.</span>
             }
         </p>
 
-        <button class="connection-btn" @onclick="CreateSession">Establish Secure Connection</button>
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <p style="color: #ff6b6b; font-family: 'Courier New'; font-size: 13px; margin-top: 0.5rem;">@errorMessage</p>
+        }
+
+        <button class="connection-btn" @onclick="CreateSession" disabled="@isConnecting">
+            @(isConnecting ? "Looking up identity..." : "Establish Secure Connection")
+        </button>
     </div>
 
     @if (ChatStore.Chats.Any())
@@ -69,7 +87,7 @@
                                 <svg class="lock-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
                                     <path d="M12 2C9.243 2 7 4.243 7 7v3H6c-1.103 0-2 .897-2 2v8c0 1.103.897 2 2 2h12c1.103 0 2-.897 2-2v-8c0-1.103-.897-2-2-2h-1V7c0-2.757-2.243-5-5-5zm-3 5c0-1.654 1.346-3 3-3s3 1.346 3 3v3H9V7zm9 5v8H6v-8h12z" />
                                 </svg>
-                                @(chat.SessionKey.Length > 8 ? chat.SessionKey[..8] + "…" : chat.SessionKey)
+                                @chat.PartnerAegisId
                             </span>
                         </div>
                     </NavLink>
@@ -80,9 +98,12 @@
 </div>
 
 @code {
+    private string partnerAegisId = "";
     private string sessionName = "";
     private string sessionKey = "";
     private bool keyCopied = false;
+    private bool isConnecting = false;
+    private string errorMessage = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -105,11 +126,63 @@
 
     private async Task CreateSession()
     {
-        if (string.IsNullOrWhiteSpace(sessionName) || string.IsNullOrWhiteSpace(sessionKey))
-            return;
+        errorMessage = "";
+        var id = partnerAegisId.Trim().ToUpperInvariant();
 
-        ChatStore.CreateChat(sessionKey, sessionName);
-        await ChatStore.SaveAsync();
-        Navigation.NavigateTo($"/chat/{Uri.EscapeDataString(sessionKey)}");
+        if (id.Length != 8)
+        {
+            errorMessage = "Partner Aegis ID must be exactly 8 characters.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(sessionName))
+        {
+            errorMessage = "Enter a display name for this contact.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(sessionKey))
+        {
+            errorMessage = "Session key is required.";
+            return;
+        }
+
+        isConnecting = true;
+        try
+        {
+            var client = ClientFactory.CreateClient("WebAPI");
+            var response = await client.GetAsync($"identity/lookup/{id}");
+
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                errorMessage = $"Aegis ID '{id}' not found. Ask your partner to share their ID from the home screen.";
+                return;
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                errorMessage = "Could not reach the identity server. Try again.";
+                return;
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<UserKeyGetResult>();
+            if (result is null || string.IsNullOrEmpty(result.PublicKey))
+            {
+                errorMessage = "Invalid response from identity server.";
+                return;
+            }
+
+            ChatStore.CreateChat(sessionKey, sessionName, id, result.PublicKey);
+            await ChatStore.SaveAsync();
+            Navigation.NavigateTo($"/chat/{Uri.EscapeDataString(sessionKey)}");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Connection failed: {ex.Message}";
+        }
+        finally
+        {
+            isConnecting = false;
+        }
     }
 }

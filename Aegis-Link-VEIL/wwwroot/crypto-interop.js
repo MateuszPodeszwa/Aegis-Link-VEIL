@@ -86,5 +86,42 @@
         const bytes = new Uint8Array(16);
         crypto.getRandomValues(bytes);
         return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+    },
+
+    // Derive an ECDH shared secret from own secret key + partner public key.
+    // Both parties produce the same 32-byte key without ever transmitting it.
+    computeSharedKey: function (mySecretKeyB64, partnerPublicKeyB64) {
+        const mySecretKey = Uint8Array.from(atob(mySecretKeyB64), c => c.charCodeAt(0));
+        const partnerPublicKey = Uint8Array.from(atob(partnerPublicKeyB64), c => c.charCodeAt(0));
+        const sharedKey = nacl.box.before(partnerPublicKey, mySecretKey);
+        return btoa(String.fromCharCode(...sharedKey));
+    },
+
+    // Encrypt plaintext with the ECDH-derived shared key (XSalsa20-Poly1305).
+    // Returns base64(nonce || ciphertext).
+    boxEncrypt: function (plaintext, sharedKeyB64) {
+        const keyBytes = Uint8Array.from(atob(sharedKeyB64), c => c.charCodeAt(0));
+        const nonce = nacl.randomBytes(nacl.secretbox.nonceLength);
+        const messageBytes = nacl.util.decodeUTF8(plaintext);
+        const encrypted = nacl.secretbox(messageBytes, nonce, keyBytes);
+        const combined = new Uint8Array(nonce.length + encrypted.length);
+        combined.set(nonce);
+        combined.set(encrypted, nonce.length);
+        return btoa(String.fromCharCode(...combined));
+    },
+
+    // Decrypt a boxEncrypt payload. Returns plaintext or null on failure.
+    boxDecrypt: function (ciphertextB64, sharedKeyB64) {
+        try {
+            const keyBytes = Uint8Array.from(atob(sharedKeyB64), c => c.charCodeAt(0));
+            const combined = Uint8Array.from(atob(ciphertextB64), c => c.charCodeAt(0));
+            const nonce = combined.slice(0, nacl.secretbox.nonceLength);
+            const ciphertext = combined.slice(nacl.secretbox.nonceLength);
+            const decrypted = nacl.secretbox.open(ciphertext, nonce, keyBytes);
+            if (!decrypted) return null;
+            return nacl.util.encodeUTF8(decrypted);
+        } catch {
+            return null;
+        }
     }
 };

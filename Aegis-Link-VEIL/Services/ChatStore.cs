@@ -41,7 +41,7 @@ public class ChatStore
         return Chats.FirstOrDefault(c => c.SessionKey == sessionId);
     }
 
-    public ChatSession CreateChat(string sessionId, string sessionName)
+    public ChatSession CreateChat(string sessionId, string sessionName, string partnerAegisId, string partnerPublicKey)
     {
         var chat = Chats.FirstOrDefault(c => c.SessionKey == sessionId);
 
@@ -50,7 +50,9 @@ public class ChatStore
             chat = new ChatSession
             {
                 SessionKey = sessionId,
-                PartnerName = sessionName
+                PartnerName = sessionName,
+                PartnerAegisId = partnerAegisId,
+                PartnerPublicKey = partnerPublicKey
             };
 
             Chats.Add(chat);
