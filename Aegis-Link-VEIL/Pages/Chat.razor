@@ -17,6 +17,15 @@
         <div class="app-name">@(chatSession?.PartnerName ?? "Aegis Link")</div>
     </div>
 
+    @if (connectionError is not null)
+    {
+        <div class="connection-banner error-banner">@connectionError</div>
+    }
+    else if (connectionStatus != "Connected")
+    {
+        <div class="connection-banner">@connectionStatus</div>
+    }
+
     <div class="messages-container">
         <ul class="messages-list">
             @foreach (var msg in chatSession?.Messages ?? Enumerable.Empty<ChatMessage>())
@@ -56,6 +65,8 @@
     private ChatSession? chatSession;
     private HubConnection? hubConnection;
     private string messageInput = "";
+    private string connectionStatus = "Connecting...";
+    private string? connectionError;
 
     // Initialize the component and setup the hub connection
     protected override async Task OnInitializedAsync()
@@ -75,7 +86,20 @@
         // Create the hub connection
         hubConnection = new HubConnectionBuilder()
             .WithUrl(hubUrl)
+            .WithAutomaticReconnect()
             .Build();
+
+        hubConnection.Reconnecting += _ =>
+        {
+            connectionStatus = "Reconnecting...";
+            return InvokeAsync(StateHasChanged);
+        };
+
+        hubConnection.Reconnected += _ =>
+        {
+            connectionStatus = "Connected";
+            return InvokeAsync(StateHasChanged);
+        };
 
         // Listen for incoming messages
         hubConnection.On<string>("ReceiveMessage", async (payload) =>
@@ -98,15 +122,26 @@
         // Listen for partner join events
         hubConnection.On("UserJoined", async () =>
         {
+            if (chatSession is null) return;
             chatSession.StoreMessage("A partner joined the secure session.", MessageSender.System);
             await ChatStore.SaveAsync();
             await InvokeAsync(StateHasChanged);
         });
 
-        await hubConnection.StartAsync();
-
-        // Join the session
-        await JoinSession();
+        try
+        {
+            await hubConnection.StartAsync();
+            await JoinSession();
+            connectionStatus = "Connected";
+        }
+        catch (Exception ex)
+        {
+            connectionError = $"Could not connect to server: {ex.Message}";
+        }
+        finally
+        {
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     // Send a join session message to the hub
@@ -115,7 +150,7 @@
         if (hubConnection is not null && chatSession is not null)
         {
             await hubConnection.SendAsync("JoinSession", SessionId);
-            chatSession.StoreMessage($"You joined session {SessionId}", MessageSender.System);
+            chatSession.StoreMessage("Secure session established. Waiting for partner...", MessageSender.System);
             await ChatStore.SaveAsync();
         }
     }
@@ -123,7 +158,9 @@
     // Send a chat message
     private async Task SendMessage()
     {
-        if (hubConnection is not null && chatSession is not null && !string.IsNullOrWhiteSpace(messageInput))
+        if (hubConnection is not null && chatSession is not null
+            && hubConnection.State == HubConnectionState.Connected
+            && !string.IsNullOrWhiteSpace(messageInput))
         {
             var plaintext = messageInput;
             var ciphertext = await JS.InvokeAsync<string>(

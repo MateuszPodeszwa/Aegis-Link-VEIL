@@ -144,3 +144,20 @@
 .send-btn:active {
     transform: scale(0.95);
 }
+
+.connection-banner {
+    width: 100%;
+    text-align: center;
+    padding: 0.35rem 1rem;
+    font-size: 0.78rem;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.06em;
+    background: rgba(91, 78, 240, 0.12);
+    color: #9d93d0;
+    box-sizing: border-box;
+}
+
+.error-banner {
+    background: rgba(220, 60, 60, 0.12);
+    color: #ff8a8a;
+}

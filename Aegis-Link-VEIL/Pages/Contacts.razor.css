@@ -179,3 +179,64 @@
     flex-shrink: 0;
     color: #cccccc;
 }
+
+.key-group {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.key-input {
+    flex: 1;
+    min-width: 0;
+}
+
+.key-action-btn {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    border: 1px solid #5b4ef0;
+    background: rgba(42, 36, 80, 0.4);
+    color: #b3aef0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.key-action-btn:hover {
+    background: rgba(91, 78, 240, 0.3);
+    color: #fff;
+}
+
+.key-action-btn.btn-copied {
+    color: #6cf0a0;
+    border-color: #6cf0a0;
+}
+
+.key-hint {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: #7a72a8;
+    margin: -0.25rem 0 0;
+    align-self: flex-start;
+}
+
+.key-hint-success {
+    color: #6cf0a0;
+}
+
+.contact-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    width: 100%;
+}
+
+.contact-link:hover {
+    color: inherit;
+    text-decoration: none;
+}

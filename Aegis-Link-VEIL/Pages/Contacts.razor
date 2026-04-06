@@ -1,8 +1,10 @@
-﻿@layout EmptyLayout
+@layout EmptyLayout
 @page "/contacts"
 @inject ChatStore ChatStore
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
 
-<PageTitle>Contacts</PageTitle>
+<PageTitle>Aegis Link</PageTitle>
 
 <div class="aegis-root">
     <div class="top-bar">
@@ -14,60 +16,100 @@
 
     <div class="connection-form">
         <label for="sessionNameInput" class="form-label">Partner Name</label>
-        <input id="sessionNameInput" @bind="sessionName" placeholder="Enter Partner Name" class="form-input" />
-        <label for="sessionKeyInput" class="form-label">Session Key</label>
-        <input id="sessionKeyInput" type="password" autocomplete="off" @bind="sessionKey" placeholder="Enter Session Key" class="form-input" />
+        <input id="sessionNameInput" @bind="sessionName" placeholder="Enter partner name" class="form-input" />
+
+        <label class="form-label">Session Key</label>
+        <div class="key-group">
+            <input @bind="sessionKey" placeholder="Shared session key" class="form-input key-input" />
+            <button class="key-action-btn" @onclick="GenerateKey" title="Generate new key">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                    <path d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
+                </svg>
+            </button>
+            <button class="key-action-btn @(keyCopied ? "btn-copied" : "")" @onclick="CopyKey" title="Copy key to clipboard">
+                @if (keyCopied)
+                {
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                        <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
+                    </svg>
+                }
+                else
+                {
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                        <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" />
+                    </svg>
+                }
+            </button>
+        </div>
+        <p class="key-hint @(keyCopied ? "key-hint-success" : "")">
+            @if (keyCopied)
+            {
+                <span>Copied! Share this key with your partner out of band.</span>
+            }
+            else
+            {
+                <span>Both parties need the same key. Copy and share it securely.</span>
+            }
+        </p>
+
         <button class="connection-btn" @onclick="CreateSession">Establish Secure Connection</button>
     </div>
 
-    <h3 class="contacts-header">Contacts</h3>
-
-    <ul class="contacts-list">
-        @if (ChatStore.Chats.Any())
-        {
+    @if (ChatStore.Chats.Any())
+    {
+        <h3 class="contacts-header">Recent Sessions</h3>
+        <ul class="contacts-list">
             @foreach (var chat in ChatStore.Chats)
             {
                 <li class="contact-card" @key="chat.SessionKey">
-                    <NavLink class="contact-link" href="@($"/chat/{chat.SessionKey}")">
+                    <NavLink class="contact-link" href="@($"/chat/{Uri.EscapeDataString(chat.SessionKey)}")">
                         <div class="contact-name">@chat.PartnerName</div>
                         <div class="contact-key">
                             <span class="lock-wrapper">
                                 <svg class="lock-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
                                     <path d="M12 2C9.243 2 7 4.243 7 7v3H6c-1.103 0-2 .897-2 2v8c0 1.103.897 2 2 2h12c1.103 0 2-.897 2-2v-8c0-1.103-.897-2-2-2h-1V7c0-2.757-2.243-5-5-5zm-3 5c0-1.654 1.346-3 3-3s3 1.346 3 3v3H9V7zm9 5v8H6v-8h12z" />
                                 </svg>
-                                @chat.SessionKey
+                                @(chat.SessionKey.Length > 8 ? chat.SessionKey[..8] + "…" : chat.SessionKey)
                             </span>
                         </div>
                     </NavLink>
                 </li>
             }
-        }
-        else
-        {
-            <li class="no-contacts">No contacts yet</li>
-        }
-    </ul>
+        </ul>
+    }
 </div>
 
 @code {
     private string sessionName = "";
     private string sessionKey = "";
+    private bool keyCopied = false;
 
     protected override async Task OnInitializedAsync()
     {
         await ChatStore.InitializeAsync();
+        sessionKey = await JS.InvokeAsync<string>("aegisCrypto.generateSessionKey");
+    }
+
+    private async Task GenerateKey()
+    {
+        sessionKey = await JS.InvokeAsync<string>("aegisCrypto.generateSessionKey");
+        keyCopied = false;
+    }
+
+    private async Task CopyKey()
+    {
+        if (string.IsNullOrWhiteSpace(sessionKey)) return;
+        await JS.InvokeVoidAsync("navigator.clipboard.writeText", sessionKey);
+        keyCopied = true;
     }
 
     private async Task CreateSession()
     {
         if (string.IsNullOrWhiteSpace(sessionName) || string.IsNullOrWhiteSpace(sessionKey))
-        {
             return;
-        }
 
         ChatStore.CreateChat(sessionKey, sessionName);
         await ChatStore.SaveAsync();
-        sessionKey = "";
-        sessionName = "";
+        Navigation.NavigateTo($"/chat/{Uri.EscapeDataString(sessionKey)}");
     }
 }
