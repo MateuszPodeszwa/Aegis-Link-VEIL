@@ -69,3 +69,10 @@ nunit-*.xml
 .idea/.idea.Aegis-Link-VEIL/.idea/workspace.xml
 
 Aegis-Link-VEIL.sln.DotSettings 2.user
+/.vs/Aegis-Link-VEIL
+
+# Ignore user-specific Visual Studio files
+*.csproj.user
+bin/
+obj/
+.vs/

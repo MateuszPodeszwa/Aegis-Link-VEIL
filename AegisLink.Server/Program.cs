@@ -1,5 +1,7 @@
+using AegisLink.Server.Data;
 using AegisLink.Server.Hubs;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,10 +35,19 @@ builder.Services.AddResponseCompression(opts =>
         [ "application/octet-stream" ]);
 });
 
+builder.Services.AddDbContext<AegisLinkDbContext>(options =>
+    options.UseSqlite("Data Source=aegislink.db"));
+
 var app = builder.Build();
 
-// --- Middleware ---
-app.UseResponseCompression();
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AegisLinkDbContext>();
+    db.Database.EnsureCreated();
+}
+
+    // --- Middleware ---
+    app.UseResponseCompression();
 app.MapHub<SecureMessagingHub>("/chatHub"); 
 app.UseHttpsRedirection();
 

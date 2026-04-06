@@ -10,6 +10,11 @@
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
     </ItemGroup>
 
+	<ItemGroup>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0" />
+	</ItemGroup>
+
     <ItemGroup>
       <ProjectReference Include="..\AegisLink.Shared\AegisLink.Shared.csproj" />
     </ItemGroup>
