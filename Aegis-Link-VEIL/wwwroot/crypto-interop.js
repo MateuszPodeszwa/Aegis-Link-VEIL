@@ -110,6 +110,17 @@
         return btoa(String.fromCharCode(...combined));
     },
 
+    // Derive a deterministic room ID from two Aegis IDs.
+    // IDs are sorted before hashing so both parties compute the same result regardless of who initiates.
+    // Returns a 32-char hex string (first 16 bytes of SHA-256).
+    computeRoomId: async function (myAegisId, partnerAegisId) {
+        const sorted = [myAegisId, partnerAegisId].sort().join(':');
+        const encoder = new TextEncoder();
+        const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(sorted));
+        const hash = new Uint8Array(hashBuffer);
+        return Array.from(hash.slice(0, 16), b => b.toString(16).padStart(2, '0')).join('');
+    },
+
     // Decrypt a boxEncrypt payload. Returns plaintext or null on failure.
     boxDecrypt: function (ciphertextB64, sharedKeyB64) {
         try {

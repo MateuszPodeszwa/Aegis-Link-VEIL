@@ -25,7 +25,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddControllers(); // This finds your new Controller
+builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 builder.Services.AddSignalR();

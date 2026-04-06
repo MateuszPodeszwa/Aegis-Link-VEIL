@@ -21,7 +21,7 @@
         <label for="partnerAegisIdInput" class="form-label">Partner Aegis ID</label>
         <input id="partnerAegisIdInput"
                @bind="partnerAegisId"
-               placeholder="8-character Aegis ID (e.g. RWIMVBT2)"
+               placeholder="8-character ID (e.g. RWIMVBT2)"
                class="form-input"
                maxlength="8"
                style="text-transform: uppercase; letter-spacing: 0.12em;" />
@@ -29,47 +29,13 @@
         <label for="sessionNameInput" class="form-label" style="margin-top: 0.75rem;">Partner Name</label>
         <input id="sessionNameInput" @bind="sessionName" placeholder="Display name for this contact" class="form-input" />
 
-        <label class="form-label" style="margin-top: 0.75rem;">Session Key</label>
-        <div class="key-group">
-            <input @bind="sessionKey" placeholder="Shared session key" class="form-input key-input" />
-            <button class="key-action-btn" @onclick="GenerateKey" title="Generate new key">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                    <path d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
-                </svg>
-            </button>
-            <button class="key-action-btn @(keyCopied ? "btn-copied" : "")" @onclick="CopyKey" title="Copy key to clipboard">
-                @if (keyCopied)
-                {
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                        <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
-                    </svg>
-                }
-                else
-                {
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                        <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" />
-                    </svg>
-                }
-            </button>
-        </div>
-        <p class="key-hint @(keyCopied ? "key-hint-success" : "")">
-            @if (keyCopied)
-            {
-                <span>Copied! Share this key with your partner out of band.</span>
-            }
-            else
-            {
-                <span>Both parties need the same session key AND each other's Aegis ID.</span>
-            }
-        </p>
-
         @if (!string.IsNullOrEmpty(errorMessage))
         {
-            <p style="color: #ff6b6b; font-family: 'Courier New'; font-size: 13px; margin-top: 0.5rem;">@errorMessage</p>
+            <p style="color: #ff6b6b; font-family: 'Courier New'; font-size: 13px; margin-top: 0.75rem;">@errorMessage</p>
         }
 
-        <button class="connection-btn" @onclick="CreateSession" disabled="@isConnecting">
-            @(isConnecting ? "Looking up identity..." : "Establish Secure Connection")
+        <button class="connection-btn" @onclick="Connect" disabled="@isConnecting">
+            @(isConnecting ? "Connecting..." : "Establish Secure Connection")
         </button>
     </div>
 
@@ -100,31 +66,15 @@
 @code {
     private string partnerAegisId = "";
     private string sessionName = "";
-    private string sessionKey = "";
-    private bool keyCopied = false;
     private bool isConnecting = false;
     private string errorMessage = "";
 
     protected override async Task OnInitializedAsync()
     {
         await ChatStore.InitializeAsync();
-        sessionKey = await JS.InvokeAsync<string>("aegisCrypto.generateSessionKey");
     }
 
-    private async Task GenerateKey()
-    {
-        sessionKey = await JS.InvokeAsync<string>("aegisCrypto.generateSessionKey");
-        keyCopied = false;
-    }
-
-    private async Task CopyKey()
-    {
-        if (string.IsNullOrWhiteSpace(sessionKey)) return;
-        await JS.InvokeVoidAsync("navigator.clipboard.writeText", sessionKey);
-        keyCopied = true;
-    }
-
-    private async Task CreateSession()
+    private async Task Connect()
     {
         errorMessage = "";
         var id = partnerAegisId.Trim().ToUpperInvariant();
@@ -141,21 +91,24 @@
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(sessionKey))
-        {
-            errorMessage = "Session key is required.";
-            return;
-        }
-
         isConnecting = true;
         try
         {
+            // Load own identity — needed to compute the deterministic room ID
+            var identity = await JS.InvokeAsync<StoredIdentity?>("aegisCrypto.loadIdentity");
+            if (identity is null)
+            {
+                errorMessage = "No local identity found. Return to home and create an account.";
+                return;
+            }
+
+            // Look up the partner's public key
             var client = ClientFactory.CreateClient("WebAPI");
             var response = await client.GetAsync($"identity/lookup/{id}");
 
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
-                errorMessage = $"Aegis ID '{id}' not found. Ask your partner to share their ID from the home screen.";
+                errorMessage = $"Aegis ID '{id}' not found. Check the ID and try again.";
                 return;
             }
 
@@ -172,17 +125,26 @@
                 return;
             }
 
-            ChatStore.CreateChat(sessionKey, sessionName, id, result.PublicKey);
+            // Both parties independently compute the same room ID from their two Aegis IDs.
+            // IDs are sorted before hashing so order of initiation doesn't matter.
+            var roomId = await JS.InvokeAsync<string>(
+                "aegisCrypto.computeRoomId",
+                identity.AegisId,
+                id);
+
+            ChatStore.CreateChat(roomId, sessionName, id, result.PublicKey);
             await ChatStore.SaveAsync();
-            Navigation.NavigateTo($"/chat/{Uri.EscapeDataString(sessionKey)}");
+            Navigation.NavigateTo($"/chat/{Uri.EscapeDataString(roomId)}");
         }
         catch (Exception ex)
         {
-            errorMessage = $"Connection failed: {ex.Message}";
+            errorMessage = $"Something went wrong: {ex.Message}";
         }
         finally
         {
             isConnecting = false;
         }
     }
+
+    private record StoredIdentity(string AegisId, string PublicKey, string SecretKey);
 }
