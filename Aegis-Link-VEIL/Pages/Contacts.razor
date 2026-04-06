@@ -16,7 +16,7 @@
         <label for="sessionNameInput" class="form-label">Partner Name</label>
         <input id="sessionNameInput" @bind="sessionName" placeholder="Enter Partner Name" class="form-input" />
         <label for="sessionKeyInput" class="form-label">Session Key</label>
-        <input id="sessionKeyInput" type="password" @bind="sessionKey" placeholder="Enter Session Key" class="form-input" />
+        <input id="sessionKeyInput" type="password" autocomplete="off" @bind="sessionKey" placeholder="Enter Session Key" class="form-input" />
         <button class="connection-btn" @onclick="CreateSession">Establish Secure Connection</button>
     </div>
 
