@@ -1,90 +1,137 @@
-@page "/chat"
+@page "/chat/{SessionId}"
+@layout EmptyLayout
+@inject ChatStore ChatStore
 @using Microsoft.AspNetCore.SignalR.Client
 @implements IAsyncDisposable
 @inject NavigationManager Navigation
 @inject IHttpClientFactory ClientFactory
 
-<h3>Aegis Link - Minimal Relay Setup</h3>
+<div class="aegis-root">
+    <div class="top-bar">
+        <button class="back-btn" @onclick="GoBack">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+            </svg>
+        </button>
+        <div class="app-name">Aegis Link</div>
+    </div>
 
-<div>
-    <input @bind="sessionId" placeholder="Session ID" />
-    <button @onclick="JoinSession">Join Session</button>
+    <div class="messages-container">
+        <ul class="messages-list">
+            @foreach (var msg in chatSession?.Messages ?? Enumerable.Empty<ChatMessage>())
+            {
+                var messageClass = msg.From switch
+                {
+                    MessageSender.Me => "message me",
+                    MessageSender.Partner => "message partner",
+                    MessageSender.System => "message system",
+                    _ => "message"
+                };
+
+                <li class="@messageClass">
+                    <div class="bubble">
+                        @msg.Content
+                    </div>
+                </li>
+            }
+        </ul>
+    </div>
+
+    <div class="message-input-bar">
+        <input @bind="messageInput" @bind:event="oninput" placeholder="Type a message..." class="message-input" />
+
+        <button class="send-btn" @onclick="SendMessage">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+            </svg>
+        </button>
+    </div>
 </div>
-
-<div style="margin-top: 20px;">
-    <input @bind="messageInput" placeholder="Type a message..." />
-    <button @onclick="SendMessage">Send</button>
-</div>
-
-<hr />
-<ul>
-    @foreach (var msg in messages)
-    {
-        <li>@msg</li>
-    }
-</ul>
 
 @code {
-    private HubConnection? hubConnection;
-    private string sessionId = "12345";
-    private string messageInput = "";
-    private List<string> messages = new();
+    [Parameter]
+    public string SessionId { get; set; } = string.Empty;
 
+    private ChatSession? chatSession;
+    private HubConnection? hubConnection;
+    private string messageInput = "";
+
+    // Initialize the component and setup the hub connection
     protected override async Task OnInitializedAsync()
     {
+        await ChatStore.InitializeAsync();
+        chatSession = ChatStore.GetChat(SessionId);
+
+        if (string.IsNullOrWhiteSpace(SessionId) || chatSession == null)
+        {
+            Navigation.NavigateTo("/");
+            return;
+        }
+
         var client = ClientFactory.CreateClient("WebAPI");
         var hubUrl = new Uri(client.BaseAddress!, "chatHub");
-        
-        // Replace with your actual API port
+
+        // Create the hub connection
         hubConnection = new HubConnectionBuilder()
-            // This dynamically builds the correct absolute URL
-            .WithUrl(hubUrl) 
+            .WithUrl(hubUrl)
             .Build();
 
         // Listen for incoming messages
         hubConnection.On<string>("ReceiveMessage", async (message) =>
         {
-            messages.Add($"Partner: {message}");
+            chatSession.StoreMessage(message, MessageSender.Partner);
+            await ChatStore.SaveAsync();
             await InvokeAsync(StateHasChanged);
         });
 
-        // Listen for partner connection alerts
+        // Listen for partner join events
         hubConnection.On("UserJoined", async () =>
         {
-            messages.Add("System: A partner joined the secure session.");
+            chatSession.StoreMessage("A partner joined the secure session.", MessageSender.System);
+            await ChatStore.SaveAsync();
             await InvokeAsync(StateHasChanged);
         });
 
         await hubConnection.StartAsync();
+
+        // Join the session
+        await JoinSession();
     }
 
+    // Send a join session message to the hub
     private async Task JoinSession()
     {
-        if (hubConnection is not null)
+        if (hubConnection is not null && chatSession is not null)
         {
-            await hubConnection.SendAsync("JoinSession", sessionId);
-            messages.Add($"System: You joined session {sessionId}");
+            await hubConnection.SendAsync("JoinSession", SessionId);
+            chatSession.StoreMessage($"You joined session {SessionId}", MessageSender.System);
+            await ChatStore.SaveAsync();
         }
     }
 
+    // Send a chat message
     private async Task SendMessage()
     {
-        if (hubConnection is not null && !string.IsNullOrWhiteSpace(messageInput))
+        if (hubConnection is not null && chatSession is not null && !string.IsNullOrWhiteSpace(messageInput))
         {
-            // Send to the API hub
-            await hubConnection.SendAsync("SendMessage", sessionId, messageInput);
-            
-            // Display it locally
-            messages.Add($"Me: {messageInput}");
-            messageInput = string.Empty; 
+            await hubConnection.SendAsync("SendMessage", SessionId, messageInput);
+            chatSession.StoreMessage(messageInput, MessageSender.Me);
+            await ChatStore.SaveAsync();
+            messageInput = string.Empty;
         }
     }
 
+    // Dispose hub connection
     public async ValueTask DisposeAsync()
     {
         if (hubConnection is not null)
         {
             await hubConnection.DisposeAsync();
         }
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/contacts");
     }
 }

@@ -10,10 +10,13 @@ internal class Program
         builder.RootComponents.Add<App>("#app");
         builder.RootComponents.Add<HeadOutlet>("head::after");
 
+        builder.Services.AddScoped<ChatStore>();
         builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
-        builder.Services.AddHttpClient("WebAPI", client => 
+        var webApiBaseAddress = builder.Configuration["WebApi:BaseAddress"]
+            ?? throw new InvalidOperationException("WebApi:BaseAddress is not configured.");
+        builder.Services.AddHttpClient("WebAPI", client =>
         {
-            client.BaseAddress = new Uri("https://localhost:5162");
+            client.BaseAddress = new Uri(webApiBaseAddress);
         });
 
         await builder.Build().RunAsync();
