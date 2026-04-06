@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "Aegis-Link-VEIL\\Aegis-Link-VEIL.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "AegisLink.Server\\AegisLink.Server.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

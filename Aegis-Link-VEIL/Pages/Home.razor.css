@@ -34,7 +34,7 @@
 }
 
 .app-name {
-    font-size: clamp(30px, 3vw, 28px);
+    font-size: clamp(30px, 3vw, 40px);
     font-weight: 700;
     letter-spacing: 0.18em;
     color: #f0eeff;
@@ -49,7 +49,9 @@
     text-transform: uppercase;
 }
 
-.cta-btn {
+::deep .cta-btn,
+::deep .cta-btn:link,
+::deep .cta-btn:visited {
     margin: 1.4rem 1.5rem 0;
     width: calc(100% - 3rem);
     max-width: 420px;
@@ -70,8 +72,11 @@
     text-decoration: none;
 }
 
-.cta-btn:hover { background: #7063f5; }
-.cta-btn:active { transform: scale(0.98); }
+    ::deep .cta-btn:hover,
+    ::deep .cta-btn:active {
+        color: #fff;
+        text-decoration: none;
+    }
 
 .section-label {
     width: 100%;
@@ -205,3 +210,38 @@
 }
 
 .spacer { height: 90px; }
+
+.identity-card {
+    margin: 1.4rem 1.5rem 0;
+    width: calc(100% - 3rem);
+    max-width: 420px;
+    background: rgba(22, 18, 45, 0.85);
+    border: 1px solid #3a3660;
+    border-radius: 10px;
+    padding: 16px 20px;
+    text-align: center;
+}
+
+.id-label {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: #9d93d0;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    margin-bottom: 8px;
+}
+
+.id-value {
+    font-family: 'Courier New', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    color: #a99df7;
+    margin-bottom: 6px;
+}
+
+.id-hint {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: #4e4a6a;
+}

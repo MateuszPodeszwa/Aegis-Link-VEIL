@@ -1,5 +1,10 @@
-﻿@layout EmptyLayout
-@page "/"
+﻿@page "/"
+@layout EmptyLayout
+@inject IJSRuntime JS
+@inject IHttpClientFactory ClientFactory
+@inject NavigationManager Navigation
+@using AegisLink.Shared
+@using System.Net.Http.Json
 
 <PageTitle>Aegis Link</PageTitle>
 
@@ -7,15 +12,49 @@
 
     <div class="top-bar">
         <div class="logo-wrap">
-            <img src="images/AEGIS LOGO TEMP.svg" alt="Aegis Link Logo" />
+            <img src="images/AEGIS-LOGO-TEMP.svg" alt="Aegis Link Logo" />
         </div>
         <div class="app-name">Aegis Link</div>
         <div class="app-sub">End-to-end encrypted relay</div>
     </div>
 
-    <a href="chat" class="cta-btn">
-        Establish Secure Connection
-    </a>
+    @if (identity is null)
+    {
+        <!-- No identity yet — show create account prompt -->
+        <button class="cta-btn" @onclick="CreateAccount">
+            Create Account
+        </button>
+
+        <p class="no-contacts" style="margin-top: 1rem;">
+            Generate your anonymous Aegis ID to start messaging.
+        </p>
+    }
+    else if (isRegistering)
+    {
+        <div class="cta-btn" style="cursor: default; opacity: 0.7;">
+            Registering...
+        </div>
+    }
+    else
+    {
+        <!-- Identity exists -->
+        <div class="identity-card">
+            <div class="id-label">Your Aegis ID</div>
+            <div class="id-value">@identity.AegisId</div>
+            <div class="id-hint">Share this ID so others can message you</div>
+        </div>
+
+        <NavLink href="chat" class="cta-btn" Match="NavLinkMatch.All">
+            Establish Secure Connection
+        </NavLink>
+    }
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <p style="color: #ff6b6b; font-family: 'Courier New'; font-size: 13px; margin-top: 1rem; text-align: center;">
+            @errorMessage
+        </p>
+    }
 
     <div class="section-label">Saved Contacts</div>
 
@@ -26,7 +65,6 @@
     <div class="spacer"></div>
 
     <nav class="bottom-nav">
-
         <div class="nav-item">
             <div class="nav-icon">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
@@ -64,7 +102,90 @@
             </div>
             Settings
         </div>
-
     </nav>
 
 </div>
+
+@code {
+    private AegisIdentity? identity;
+    private bool isRegistering = false;
+    private string errorMessage = string.Empty;
+
+    // Simple model to hold the loaded identity in C#
+    private record AegisIdentity(string AegisId, string PublicKey, string SecretKey);
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Check if an identity already exists in localStorage
+        var stored = await JS.InvokeAsync<StoredIdentity?>("aegisCrypto.loadIdentity");
+
+        if (stored is not null)
+        {
+            identity = new AegisIdentity(
+                stored.AegisId,
+                stored.PublicKey,
+                stored.SecretKey
+            );
+        }
+    }
+
+    private async Task CreateAccount()
+    {
+        errorMessage = string.Empty;
+        isRegistering = true;
+
+        try
+        {
+            // Generate keypair in the browser via JS
+            var keypair = await JS.InvokeAsync<GeneratedKeypair>("aegisCrypto.generateKeypair");
+
+            // Derive the 8-char Aegis ID from the public key
+            var aegisId = await JS.InvokeAsync<string>(
+                "aegisCrypto.createAegisId",
+                keypair.PublicKey
+            );
+
+            // Register with the server
+            var client = ClientFactory.CreateClient("WebAPI");
+
+            var response = await client.PostAsJsonAsync(
+                "identity/register",
+                new UserKeyReg(aegisId, keypair.PublicKey)
+            );
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+                errorMessage = error?.Error ?? "Registration failed.";
+                return;
+            }
+
+            // Save identity to localStorage
+            await JS.InvokeVoidAsync(
+                "aegisCrypto.saveIdentity",
+                aegisId,
+                keypair.PublicKey,
+                keypair.SecretKey
+            );
+
+            // Update the UI
+            identity = new AegisIdentity(
+                aegisId,
+                keypair.PublicKey,
+                keypair.SecretKey
+            );
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Something went wrong: {ex.Message}";
+        }
+        finally
+        {
+            isRegistering = false;
+        }
+    }
+
+    private record GeneratedKeypair(string PublicKey, string SecretKey);
+    private record StoredIdentity(string AegisId, string PublicKey, string SecretKey);
+    private record ErrorResponse(string Error);
+}
