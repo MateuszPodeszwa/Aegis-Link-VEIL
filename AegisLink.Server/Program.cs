@@ -20,7 +20,8 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(allowedOrigins)
             .AllowAnyHeader()
-            .AllowAnyMethod();
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
 
@@ -46,20 +47,20 @@ using (var scope = app.Services.CreateScope())
     db.Database.EnsureCreated();
 }
 
-    // --- Middleware ---
-    app.UseResponseCompression();
-app.MapHub<SecureMessagingHub>("/chatHub"); 
+// --- Middleware ---
+app.UseResponseCompression();
 app.UseHttpsRedirection();
+app.UseRouting();
+app.UseCors("_myAllowSpecificOrigins");
+app.UseAuthorization();
+
+app.MapHub<SecureMessagingHub>("/chatHub");
 
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
 
-app.UseRouting();
-app.UseCors("_myAllowSpecificOrigins");
-app.UseAuthorization();
-
-app.MapControllers(); // This maps the routes defined in your Controller attributes
+app.MapControllers();
 
 app.Run();
