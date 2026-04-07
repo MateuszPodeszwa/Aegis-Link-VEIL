@@ -47,25 +47,18 @@ namespace AegisLink.Server.Controllers
         }
 
         [HttpDelete("deregister")]
-        public async Task<IActionResult> Deregister([FromBody] UserKeyReg request)
+        public Task<IActionResult> Deregister([FromBody] UserKeyReg request)
         {
-            // Re-run the same ownership check used at registration.
-            // The caller must prove they hold the public key that hashes to the Aegis ID.
-            if (!AegisIdService.Verify(request.AegisId, request.PublicKey))
-                return BadRequest(new { error = "ID doesn't match public key" });
+            // Disabled until a secure deregistration authorization flow exists.
+            // The current AegisId + PublicKey check is not sufficient because the
+            // public key is retrievable via the lookup endpoint and does not prove
+            // possession of a secret or private key.
+            IActionResult result = StatusCode(501, new
+            {
+                error = "Deregistration is temporarily unavailable until a secure authorization flow is implemented"
+            });
 
-            var existing = await _dbContext.UserKeys.FindAsync(request.AegisId);
-
-            if (existing is null)
-                return NotFound(new { error = "ID not found" });
-
-            if (existing.PublicKey != request.PublicKey)
-                return Forbid();
-
-            _dbContext.UserKeys.Remove(existing);
-            await _dbContext.SaveChangesAsync();
-
-            return Ok();
+            return Task.FromResult(result);
         }
 
         [HttpGet("lookup/{id}")]
