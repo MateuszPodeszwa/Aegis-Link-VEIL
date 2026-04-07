@@ -101,10 +101,9 @@
                 try
                 {
                     var client = ClientFactory.CreateClient("WebAPI");
-                    await client.SendAsync(new HttpRequestMessage(HttpMethod.Delete, "identity/deregister")
-                    {
-                        Content = JsonContent.Create(new UserKeyReg(identity.AegisId, identity.PublicKey))
-                    });
+                    await client.PostAsJsonAsync(
+                        "identity/deregister",
+                        new UserKeyReg(identity.AegisId, identity.PublicKey));
                     // Server errors are non-fatal — local wipe proceeds regardless
                 }
                 catch
