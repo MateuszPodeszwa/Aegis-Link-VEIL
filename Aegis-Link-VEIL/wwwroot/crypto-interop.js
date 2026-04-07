@@ -121,10 +121,11 @@
     },
 
     // Derive a deterministic room ID from two Aegis IDs.
-    // IDs are sorted before hashing so both parties compute the same result regardless of who initiates.
+    // IDs are normalised (trimmed and uppercased) then sorted before hashing so both parties
+    // always compute the same room ID regardless of who initiates or how the ID was typed.
     // Returns a 32-char hex string (first 16 bytes of SHA-256).
     computeRoomId: async function (myAegisId, partnerAegisId) {
-        const sorted = [myAegisId, partnerAegisId].sort().join(':');
+        const sorted = [myAegisId.trim().toUpperCase(), partnerAegisId.trim().toUpperCase()].sort().join(':');
         const encoder = new TextEncoder();
         const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(sorted));
         const hash = new Uint8Array(hashBuffer);
