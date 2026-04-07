@@ -30,8 +30,8 @@
                     Executing the killswitch will permanently:<br /><br />
                     — Delete your Aegis ID and keypair from this device<br />
                     — Erase all chat sessions and message history<br />
-                    — Deregister your identity from the relay server<br /><br />
-                    This cannot be undone. Your Aegis ID will be gone forever.
+                    — Attempt to deregister your identity from the relay server (best-effort)<br /><br />
+                    This cannot be undone on this device. Local Aegis data will be wiped; relay server deregistration may remain pending.
                 </div>
             </div>
 
@@ -64,7 +64,7 @@
             <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; text-align: center;">
                 <div style="font-family: 'Courier New'; font-size: 13px; color: #4caf50;">Device wiped.</div>
                 <div style="font-family: 'Courier New'; font-size: 12px; color: #666; line-height: 1.6;">
-                    All local data and server identity have been erased.<br />
+                    All local Aegis data has been wiped. Relay server deregistration may remain pending.<br />
                     You can create a new anonymous identity at any time.
                 </div>
                 <button @onclick="@(() => Navigation.NavigateTo("/"))"

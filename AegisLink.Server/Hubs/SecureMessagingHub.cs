@@ -24,7 +24,7 @@ public class SecureMessagingHub : Hub
         if (string.IsNullOrEmpty(sessionId) || !SessionIdPattern.IsMatch(sessionId))
         {
             _logger.LogWarning("JoinSession rejected: invalid sessionId format from connection {ConnectionId}.", Context.ConnectionId);
-            return;
+            throw new HubException("Invalid session ID format.");
         }
 
         _tracker.Join(Context.ConnectionId, sessionId);
@@ -39,13 +39,13 @@ public class SecureMessagingHub : Hub
         if (string.IsNullOrEmpty(sessionId) || !SessionIdPattern.IsMatch(sessionId))
         {
             _logger.LogWarning("SendMessage rejected: invalid sessionId format from connection {ConnectionId}.", Context.ConnectionId);
-            return;
+            throw new HubException("Invalid session ID format.");
         }
 
         if (!_tracker.IsMember(Context.ConnectionId, sessionId))
         {
             _logger.LogWarning("SendMessage rejected: connection {ConnectionId} is not a member of session {SessionId}.", Context.ConnectionId, sessionId);
-            return;
+            throw new HubException("You must join the session before sending messages.");
         }
 
         await Clients.GroupExcept(sessionId, Context.ConnectionId).SendAsync("ReceiveMessage", payload);

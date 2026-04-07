@@ -25,8 +25,7 @@
 - Persistent storage mode
 - QR code out-of-band key verification
 - Audit/compliance extension
-- Killswitch (session wipe)
-- WeatherForecast stub endpoints not yet removed
+- Server-side deregistration authorization (killswitch currently wipes local data only; relay server deregistration remains pending until a proof-of-possession flow is implemented)
 
 ---
 

@@ -46,7 +46,7 @@ namespace AegisLink.Server.Controllers
             
         }
 
-        [HttpDelete("deregister")]
+        [HttpPost("deregister")]
         public Task<IActionResult> Deregister([FromBody] UserKeyReg request)
         {
             // Disabled until a secure deregistration authorization flow exists.
