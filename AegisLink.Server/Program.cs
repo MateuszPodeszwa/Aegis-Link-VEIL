@@ -1,5 +1,6 @@
 using AegisLink.Server.Data;
 using AegisLink.Server.Hubs;
+using AegisLink.Server.Services;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 
@@ -29,6 +30,7 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 builder.Services.AddSignalR();
+builder.Services.AddSingleton<HubSessionTracker>();
 
 builder.Services.AddResponseCompression(opts =>
 {
