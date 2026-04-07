@@ -14,10 +14,12 @@
 
 ### Current Phase
 
-Minimum viable product. The priority is:
-1. Fix existing bugs and build errors
-2. Implement end-to-end encrypted message flow (ECDH handshake → NaCl box encrypt/decrypt)
-3. Ensure the system works reliably end-to-end before adding new features
+MVP — core encrypted messaging pipeline is working. The priority is:
+1. ~~Fix existing bugs and build errors~~ — done
+2. ~~Implement end-to-end encrypted message flow (ECDH handshake → NaCl box encrypt/decrypt)~~ — done
+3. Improve the session join UX — the receiving party currently enters the initiator's Aegis ID manually; a proper invite/notification flow is pending
+4. Remove remaining boilerplate (WeatherForecast controller and shared model)
+5. Implement persistent storage mode
 
 ---
 
@@ -72,13 +74,14 @@ Minimum viable product. The priority is:
 5. Server relays the ciphertext blob — it cannot decrypt anything
 6. Recipient decrypts locally using their private key
 
-### Current State (as of project start)
+### Current State
 
 - Key generation works
 - Identity registration and lookup work
-- **Messages are NOT yet encrypted** — they travel as plaintext through SignalR
-- ECDH key exchange is not yet implemented
-- `Chat.razor.cs` is a stub (empty code-behind)
+- **ECDH key exchange is implemented** — `nacl.box.before(partnerPublicKey, mySecretKey)` derives a shared secret; both parties compute the same key independently
+- **Messages are encrypted** — `nacl.secretbox` (XSalsa20-Poly1305) with the ECDH-derived key; server only relays `base64(nonce || ciphertext)`
+- Establishing a session requires the partner's Aegis ID — the client looks up their public key before creating the chat
+- Chat logic lives in `Chat.razor` inline `@code` block (no separate code-behind file)
 
 ---
 
@@ -126,9 +129,8 @@ Minimum viable product. The priority is:
 
 | File | Role |
 |------|------|
-| `Aegis-Link-VEIL/wwwroot/js/crypto-interop.js` | All client-side crypto (key gen, encrypt, decrypt, ECDH) |
-| `Aegis-Link-VEIL/Pages/Chat.razor` | Main chat UI |
-| `Aegis-Link-VEIL/Pages/Chat.razor.cs` | Chat page code-behind (currently a stub) |
+| `Aegis-Link-VEIL/wwwroot/crypto-interop.js` | All client-side crypto (key gen, ECDH, encrypt, decrypt) |
+| `Aegis-Link-VEIL/Pages/Chat.razor` | Main chat UI and logic (inline `@code`) |
 | `Aegis-Link-VEIL/Pages/Home.razor` | Identity creation and display |
 | `Aegis-Link-VEIL/Services/ChatStore.cs` | Session storage service |
 | `Aegis-Link-VEIL/Models/ChatSession.cs` | Chat session data model |

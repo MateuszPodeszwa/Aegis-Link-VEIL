@@ -1,0 +1,131 @@
+@page "/killswitch"
+@layout EmptyLayout
+@inject IJSRuntime JS
+@inject IHttpClientFactory ClientFactory
+@inject NavigationManager Navigation
+@using AegisLink.Shared
+@using System.Net.Http.Json
+
+<PageTitle>Killswitch — Aegis Link</PageTitle>
+
+<div class="aegis-root">
+    <div class="top-bar">
+        <button class="back-btn" @onclick="@(() => Navigation.NavigateTo("/"))">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+            </svg>
+        </button>
+        <div class="app-name">Killswitch</div>
+    </div>
+
+    <div style="padding: 2rem 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; flex: 1;">
+
+        @if (!confirmed)
+        {
+            <div style="border: 1px solid #ff4444; border-radius: 8px; padding: 1.25rem; background: rgba(255,68,68,0.06);">
+                <div style="font-family: 'Courier New'; font-size: 13px; color: #ff6b6b; font-weight: bold; margin-bottom: 0.75rem; letter-spacing: 0.05em;">
+                    ⚠ IRREVERSIBLE ACTION
+                </div>
+                <div style="font-family: 'Courier New'; font-size: 12px; color: #aaa; line-height: 1.7;">
+                    Executing the killswitch will permanently:<br /><br />
+                    — Delete your Aegis ID and keypair from this device<br />
+                    — Erase all chat sessions and message history<br />
+                    — Attempt to deregister your identity from the relay server (best-effort)<br /><br />
+                    This cannot be undone on this device. Local Aegis data will be wiped; relay server deregistration may remain pending.
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <label style="font-family: 'Courier New'; font-size: 12px; color: #888;">
+                    Type <span style="color: #ff6b6b; font-weight: bold;">WIPE</span> to confirm
+                </label>
+                <input @bind="confirmInput"
+                       @bind:event="oninput"
+                       placeholder="WIPE"
+                       maxlength="4"
+                       style="background: #111; border: 1px solid #333; color: #fff; font-family: 'Courier New'; font-size: 14px; padding: 0.6rem 0.75rem; border-radius: 6px; letter-spacing: 0.15em; text-transform: uppercase; outline: none;" />
+            </div>
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <p style="font-family: 'Courier New'; font-size: 12px; color: #ff6b6b;">@errorMessage</p>
+            }
+
+            <button @onclick="Execute"
+                    disabled="@(confirmInput.ToUpperInvariant() != "WIPE" || isExecuting)"
+                    style="margin-top: auto; padding: 0.85rem; border-radius: 8px; border: none; cursor: pointer; font-family: 'Courier New'; font-size: 14px; font-weight: bold; letter-spacing: 0.08em; transition: all 0.2s;
+                           background: @(confirmInput.ToUpperInvariant() == "WIPE" ? "#cc0000" : "#2a2a2a");
+                           color: @(confirmInput.ToUpperInvariant() == "WIPE" ? "#fff" : "#555");">
+                @(isExecuting ? "WIPING..." : "EXECUTE KILLSWITCH")
+            </button>
+        }
+        else
+        {
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; text-align: center;">
+                <div style="font-family: 'Courier New'; font-size: 13px; color: #4caf50;">Device wiped.</div>
+                <div style="font-family: 'Courier New'; font-size: 12px; color: #666; line-height: 1.6;">
+                    All local Aegis data has been wiped. Relay server deregistration may remain pending.<br />
+                    You can create a new anonymous identity at any time.
+                </div>
+                <button @onclick="@(() => Navigation.NavigateTo("/"))"
+                        style="margin-top: 1rem; padding: 0.75rem 1.5rem; border-radius: 8px; border: 1px solid #333; background: transparent; color: #aaa; font-family: 'Courier New'; font-size: 13px; cursor: pointer;">
+                    Return to start
+                </button>
+            </div>
+        }
+
+    </div>
+</div>
+
+@code {
+    private string confirmInput = "";
+    private bool isExecuting = false;
+    private bool confirmed = false;
+    private string errorMessage = "";
+
+    private async Task Execute()
+    {
+        if (confirmInput.ToUpperInvariant() != "WIPE") return;
+
+        isExecuting = true;
+        errorMessage = "";
+
+        try
+        {
+            // Load identity before wiping so we can deregister from the server
+            var identity = await JS.InvokeAsync<StoredIdentity?>("aegisCrypto.loadIdentity");
+
+            // Deregister from server if an identity exists
+            if (identity is not null)
+            {
+                try
+                {
+                    var client = ClientFactory.CreateClient("WebAPI");
+                    await client.PostAsJsonAsync(
+                        "identity/deregister",
+                        new UserKeyReg(identity.AegisId, identity.PublicKey));
+                    // Server errors are non-fatal — local wipe proceeds regardless
+                }
+                catch
+                {
+                    // Network failure is acceptable; local wipe still proceeds
+                }
+            }
+
+            // Wipe all local storage
+            await JS.InvokeVoidAsync("aegisCrypto.wipeDevice");
+
+            confirmed = true;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Wipe failed: {ex.Message}";
+        }
+        finally
+        {
+            isExecuting = false;
+        }
+    }
+
+    private record StoredIdentity(string AegisId, string PublicKey, string SecretKey);
+}

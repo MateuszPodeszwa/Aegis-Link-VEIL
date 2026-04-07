@@ -46,6 +46,21 @@ namespace AegisLink.Server.Controllers
             
         }
 
+        [HttpPost("deregister")]
+        public Task<IActionResult> Deregister([FromBody] UserKeyReg request)
+        {
+            // Disabled until a secure deregistration authorization flow exists.
+            // The current AegisId + PublicKey check is not sufficient because the
+            // public key is retrievable via the lookup endpoint and does not prove
+            // possession of a secret or private key.
+            IActionResult result = StatusCode(501, new
+            {
+                error = "Deregistration is temporarily unavailable until a secure authorization flow is implemented"
+            });
+
+            return Task.FromResult(result);
+        }
+
         [HttpGet("lookup/{id}")]
         public async Task<IActionResult> Lookup(string id)
         {
