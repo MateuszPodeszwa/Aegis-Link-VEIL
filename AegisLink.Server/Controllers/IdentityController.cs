@@ -46,6 +46,28 @@ namespace AegisLink.Server.Controllers
             
         }
 
+        [HttpDelete("deregister")]
+        public async Task<IActionResult> Deregister([FromBody] UserKeyReg request)
+        {
+            // Re-run the same ownership check used at registration.
+            // The caller must prove they hold the public key that hashes to the Aegis ID.
+            if (!AegisIdService.Verify(request.AegisId, request.PublicKey))
+                return BadRequest(new { error = "ID doesn't match public key" });
+
+            var existing = await _dbContext.UserKeys.FindAsync(request.AegisId);
+
+            if (existing is null)
+                return NotFound(new { error = "ID not found" });
+
+            if (existing.PublicKey != request.PublicKey)
+                return Forbid();
+
+            _dbContext.UserKeys.Remove(existing);
+            await _dbContext.SaveChangesAsync();
+
+            return Ok();
+        }
+
         [HttpGet("lookup/{id}")]
         public async Task<IActionResult> Lookup(string id)
         {
