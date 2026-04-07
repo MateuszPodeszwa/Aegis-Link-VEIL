@@ -50,10 +50,14 @@
         localStorage.removeItem('aegis_identity');
     },
 
-    // Nuclear wipe — clears all Aegis Link data from this device.
+    // Remove only Aegis Link data from this device.
     wipeDevice: function () {
-        localStorage.clear();
-        sessionStorage.clear();
+        const aegisStorageKeys = ['aegis_identity', 'aegis_chats'];
+
+        aegisStorageKeys.forEach((key) => {
+            localStorage.removeItem(key);
+            sessionStorage.removeItem(key);
+        });
     },
 
     deriveKey: async function (sessionKeyString) {
