@@ -145,5 +145,43 @@
         } catch {
             return null;
         }
+    },
+
+    // loads contacts from local storage
+    loadContacts: function () {
+        const raw = localStorage.getItem('aegis_contacts');
+        return raw ? JSON.parse(raw) : [];
+    },
+
+    // saves a new contract or updates an existing one
+    saveContact: function (contact) {
+        const contacts = this.loadContacts();
+        const existingIndex = contacts.findIndex(c => c.aegisId === contact.aegisId);
+        if (existingIndex >= 0) {
+            contacts[existingIndex] = contact;
+        } else {
+            contacts.push(contact);
+        }
+        localStorage.setItem('aegis_contacts', JSON.stringify(contacts));
+    },
+
+    // removes a contact by their Aegis ID
+    deleteContact: function (aegisId) {
+        const contacts = this.loadContacts();
+        const filtered = contacts.filter(c => c.aegisId !== aegisId);
+        localStorage.setItem('aegis_contacts', JSON.stringify(filtered));
+    },
+
+    // generates a consistent colour for an id avatar
+    colourForId: function (aegisId) {
+        const colours = [
+            '#6c63ff', '#4ecdc4', '#f7b731', '#fc5c65',
+            '#45aaf2', '#a55eea', '#2bcbba', '#fd9644'
+        ];
+        let hash = 0;
+        for (let i = 0; i < aegisId.length; i++) {
+            hash = aegisId.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        return colours[Math.abs(hash) % colours.length];
     }
 };

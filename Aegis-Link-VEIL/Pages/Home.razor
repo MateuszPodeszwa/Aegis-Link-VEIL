@@ -3,8 +3,10 @@
 @inject IJSRuntime JS
 @inject IHttpClientFactory ClientFactory
 @inject NavigationManager Navigation
+@inject ContactService ContactService
 @using AegisLink.Shared
 @using System.Net.Http.Json
+
 
 <PageTitle>Aegis Link</PageTitle>
 
@@ -56,10 +58,47 @@
         </p>
     }
 
-    <div class="section-label">Saved Contacts</div>
+    <div class="section-header">
+        <div class="section-label">Saved Contacts</div>
+        @if (identity is not null)
+        {
+            <button class="add-contact-btn"
+                    @onclick='() => Navigation.NavigateTo("/contacts/add")'>
+                + Add
+            </button>
+        }
+    </div>
 
     <div class="contacts-list">
-        <p class="no-contacts">No saved contacts yet.</p>
+        @if (contacts.Count == 0)
+        {
+            <p class="no-contacts">No saved contacts yet.</p>
+        }
+        else
+        {
+            @foreach (var contact in contacts)
+            {
+                <div class="contact-card"
+                     @onclick="() => OpenContact(contact.AegisId)">
+                    <div class="avatar"
+                        style="@($"background: {contact.Colour}; border-color: {contact.Colour};")">
+                        @contact.Nickname[0].ToString().ToUpper()
+                    </div>
+                    <div class="contact-info">
+                        <div class="contact-name">@contact.Nickname</div>
+                        <div class="contact-id">
+                            <svg class="lock-icon" viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" stroke-width="2">
+                                <rect x="5" y="11" width="14" height="10" rx="2" />
+                                <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                            </svg>
+                            @contact.AegisId
+                        </div>
+                    </div>
+                    <div style="color: #4e4a6a; font-size: 20px;">›</div>
+                </div>
+            }
+        }
     </div>
 
     <div class="spacer"></div>
@@ -110,6 +149,7 @@
     private AegisIdentity? identity;
     private bool isRegistering = false;
     private string errorMessage = string.Empty;
+    private List<Contact> contacts = new();
 
     // Simple model to hold the loaded identity in C#
     private record AegisIdentity(string AegisId, string PublicKey, string SecretKey);
@@ -128,6 +168,12 @@
             );
 
         }
+        contacts = await ContactService.GetAllAsync();
+    }
+
+    private void OpenContact(string aegisId)
+    {
+        Navigation.NavigateTo($"/contacts/{aegisId}");
     }
 
     private async Task CreateAccount()

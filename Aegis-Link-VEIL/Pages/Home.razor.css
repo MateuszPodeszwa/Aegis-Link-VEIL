@@ -245,3 +245,29 @@
     font-size: 11px;
     color: #4e4a6a;
 }
+
+.section-header {
+    width: 100%;
+    max-width: 420px;
+    padding: 1.6rem 1.5rem 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.add-contact-btn {
+    background: transparent;
+    border: 1px solid #3a3660;
+    border-radius: 6px;
+    color: #a99df7;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+    .add-contact-btn:hover {
+        border-color: #6c63ff;
+        color: #6c63ff;
+    }
