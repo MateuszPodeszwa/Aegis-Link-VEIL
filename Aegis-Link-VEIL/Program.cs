@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Aegis_Link_VEIL;
+using Aegis_Link_VEIL.Services;
 
 internal class Program
 {
@@ -11,6 +12,7 @@ internal class Program
         builder.RootComponents.Add<HeadOutlet>("head::after");
 
         builder.Services.AddScoped<ChatStore>();
+        builder.Services.AddScoped<ContactService>();
         builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
         var webApiBaseAddress = builder.Configuration["WebApi:BaseAddress"]
             ?? throw new InvalidOperationException("WebApi:BaseAddress is not configured.");

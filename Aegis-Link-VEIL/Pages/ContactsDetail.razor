@@ -1,0 +1,275 @@
+﻿@page "/contacts/{AegisId}"
+@layout EmptyLayout
+@inject ContactService ContactService
+@inject ChatStore ChatStore
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@using AegisLink.Shared
+@using System.Text.Json
+
+<PageTitle>Contact — @(contact?.Nickname ?? AegisId)</PageTitle>
+
+<div class="aegis-root">
+
+    <div class="page-header">
+        <button class="back-btn" @onclick='() => Navigation.NavigateTo("/")'>
+            ← Back
+        </button>
+        <div class="page-title">Contact</div>
+        <div style="width: 60px;"></div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="loading-text">Loading...</div>
+    }
+    else if (contact is null)
+    {
+        <div class="empty-state">
+            <div class="empty-text">Contact not found.</div>
+            <button class="cta-btn" style="margin-top: 1rem;"
+                    @onclick='() => Navigation.NavigateTo("/")'>
+                Go Home
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="detail-area">
+
+            <!-- Avatar -->
+            <div class="detail-avatar" style="background: @contact.Colour;">
+                @contact.Nickname[0].ToString().ToUpper()
+            </div>
+
+            <!-- Nickname -->
+            <div class="field-group" style="width: 100%;">
+                <label class="field-label">Nickname</label>
+                @if (isEditingNickname)
+                {
+                    <input class="aegis-input" @bind="editNickname"
+                           @bind:event="oninput" maxlength="32"
+                           placeholder="Nickname" />
+                    <div class="btn-row" style="margin-top: 6px;">
+                        <button class="small-btn primary" @onclick="SaveNickname">
+                            Save
+                        </button>
+                        <button class="small-btn ghost" @onclick="CancelNicknameEdit">
+                            Cancel
+                        </button>
+                    </div>
+                }
+                else
+                {
+                    <div class="detail-value editable"
+                         @onclick="StartEditNickname">
+                        @contact.Nickname
+                        <span class="edit-hint">tap to edit</span>
+                    </div>
+                }
+            </div>
+
+            <!-- Aegis ID -->
+            <div class="field-group" style="width: 100%;">
+                <label class="field-label">Aegis ID</label>
+                <div class="detail-value monospace copyable" @onclick="CopyId">
+                    @contact.AegisId
+                    <span class="copy-hint">
+                        @(idCopied ? "Copied!" : "tap to copy")
+                    </span>
+                </div>
+            </div>
+
+            <!-- Note -->
+            <div class="field-group" style="width: 100%;">
+                <label class="field-label">Note</label>
+                @if (isEditingNote)
+                {
+                    <textarea class="aegis-input aegis-textarea"
+                              @bind="editNote" @bind:event="oninput"
+                              maxlength="200"
+                              placeholder="Add a note about this contact..." />
+                    <div class="char-count">@editNote.Length / 200</div>
+                    <div class="btn-row" style="margin-top: 6px;">
+                        <button class="small-btn primary" @onclick="SaveNote">
+                            Save
+                        </button>
+                        <button class="small-btn ghost" @onclick="CancelNoteEdit">
+                            Cancel
+                        </button>
+                    </div>
+                }
+                else
+                {
+                    <div class="detail-value editable" @onclick="StartEditNote">
+                        @(string.IsNullOrEmpty(contact.Note)
+                            ? "No note — tap to add one"
+                            : contact.Note)
+                        <span class="edit-hint">tap to edit</span>
+                    </div>
+                }
+            </div>
+
+            <!-- Actions -->
+            <button class="cta-btn" @onclick="StartChat">
+                Send Message
+            </button>
+
+            <button class="danger-btn" @onclick="ConfirmDelete">
+                @(confirmingDelete
+                    ? "Tap again to confirm delete"
+                    : "Delete Contact")
+            </button>
+
+        </div>
+    }
+
+</div>
+
+@code {
+    [Parameter] public string AegisId { get; set; } = string.Empty;
+
+    private Contact? contact;
+    private bool isLoading = true;
+    private string errorMessage = string.Empty;
+
+    private bool isEditingNickname = false;
+    private string editNickname = string.Empty;
+
+    private bool isEditingNote = false;
+    private string editNote = string.Empty;
+
+    private bool confirmingDelete = false;
+    private bool idCopied = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        contact = await ContactService.GetByIdAsync(AegisId);
+        isLoading = false;
+    }
+
+    // ── Nickname editing ───────────────────────────────────────────
+
+    private void StartEditNickname()
+    {
+        editNickname = contact?.Nickname ?? string.Empty;
+        isEditingNickname = true;
+    }
+
+    private async Task SaveNickname()
+    {
+        if (contact is null || string.IsNullOrWhiteSpace(editNickname)) return;
+        contact.Nickname = editNickname.Trim();
+        await ContactService.SaveAsync(contact);
+        isEditingNickname = false;
+    }
+
+    private void CancelNicknameEdit() => isEditingNickname = false;
+
+    // ── Note editing ───────────────────────────────────────────────
+
+    private void StartEditNote()
+    {
+        editNote = contact?.Note ?? string.Empty;
+        isEditingNote = true;
+    }
+
+    private async Task SaveNote()
+    {
+        if (contact is null) return;
+        contact.Note = editNote.Trim();
+        await ContactService.SaveAsync(contact);
+        isEditingNote = false;
+    }
+
+    private void CancelNoteEdit() => isEditingNote = false;
+
+    // ── Copy ID ────────────────────────────────────────────────────
+
+    private async Task CopyId()
+    {
+        await JS.InvokeVoidAsync("navigator.clipboard.writeText", AegisId);
+        idCopied = true;
+        StateHasChanged();
+        await Task.Delay(2000);
+        idCopied = false;
+        StateHasChanged();
+    }
+
+    // ── Start chat ─────────────────────────────────────────────────
+
+    private async Task StartChat()
+    {
+        if (contact is null) return;
+        errorMessage = string.Empty;
+
+        try
+        {
+            // Load own identity — needed to compute the room ID.
+            // Use JsonElement to safely read the AegisId returned from JS without
+            // relying on a specific StoredIdentity CLR type (avoids CS1061).
+            var identityEl = await JS.InvokeAsync<JsonElement?>("aegisCrypto.loadIdentity");
+            if (identityEl is null || identityEl.Value.ValueKind == JsonValueKind.Null)
+            {
+                errorMessage = "No identity found. Go back and create an account first.";
+                return;
+            }
+
+            // Try both likely property names just in case of casing differences.
+            string? myAegisId = null;
+            if (identityEl.Value.TryGetProperty("AegisId", out var prop) ||
+                identityEl.Value.TryGetProperty("aegisId", out prop))
+            {
+                if (prop.ValueKind == JsonValueKind.String)
+                    myAegisId = prop.GetString();
+            }
+
+            if (string.IsNullOrEmpty(myAegisId))
+            {
+                errorMessage = "No identity AegisId found in stored identity.";
+                return;
+            }
+
+            // Compute the deterministic room ID — same algorithm as contacts page
+            var roomId = await JS.InvokeAsync<string>(
+                "aegisCrypto.computeRoomId",
+                myAegisId,
+                contact.AegisId);
+
+            // Create or retrieve the session using the room ID as the key
+            ChatStore.CreateChat(
+                roomId,
+                contact.Nickname,
+                contact.AegisId,
+                contact.PublicKey
+            );
+            await ChatStore.SaveAsync();
+
+            Navigation.NavigateTo($"/chat/{Uri.EscapeDataString(roomId)}");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Could not start chat: {ex.Message}";
+        }
+    }
+
+    // ── Delete ─────────────────────────────────────────────────────
+
+    private async Task ConfirmDelete()
+    {
+        if (!confirmingDelete)
+        {
+            // First tap — show confirmation text and auto-reset after 3s
+            confirmingDelete = true;
+            StateHasChanged();
+            await Task.Delay(3000);
+            confirmingDelete = false;
+            StateHasChanged();
+            return;
+        }
+
+        // Second tap within 3s — actually delete
+        await ContactService.DeleteAsync(AegisId);
+        Navigation.NavigateTo("/");
+    }
+}
