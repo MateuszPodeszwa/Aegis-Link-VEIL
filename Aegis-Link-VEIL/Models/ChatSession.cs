@@ -6,15 +6,29 @@
     public string SessionKey { get; set; } = string.Empty;
     public List<ChatMessage> Messages { get; set; } = new();
 
-    public ChatMessage StoreMessage(string content, MessageSender from)
+    public ChatMessage BuildMessage(string content, MessageSender from)
     {
-        ChatMessage message = new ChatMessage
+        var message = new ChatMessage
         {
             Content = content,
             From = from
         };
 
-        Messages.Add(message);
         return message;
+    }
+
+    public void StoreMessage(ChatMessage message)
+    {
+        Messages.Add(message);
+    }
+
+    public void DeleteMessage(Guid messageId)
+    {
+        var message = Messages.FirstOrDefault(m => m.Id == messageId);
+
+        if (message != null)
+        {
+            Messages.Remove(message);
+        }
     }
 }
