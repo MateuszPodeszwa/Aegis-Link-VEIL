@@ -1,14 +1,14 @@
 @page "/chat/{SessionId}"
 @layout EmptyLayout
+@implements IAsyncDisposable
+@using Microsoft.AspNetCore.SignalR.Client
+@using System.Text.Json
 @inject ChatCryptoService Crypto
 @inject ChatHubService ChatHub
 @inject ChatStore ChatStore
-@using Microsoft.AspNetCore.SignalR.Client
-@using System.Text.Json;
-@implements IAsyncDisposable
-@inject NavigationManager Navigation
 @inject IHttpClientFactory ClientFactory
 @inject IJSRuntime JS
+@inject NavigationManager Navigation
 
 <div class="aegis-root">
     <div class="top-bar">
@@ -36,10 +36,10 @@
             @connectionError
         </div>
     }
-    @if (connectionError is null && connectionStatus is not "Connected")
+    @if (connectionError is null && ChatHub.State != HubConnectionState.Connected)
     {
         <div class="connection-banner">
-            @connectionStatus
+            @GetConnectionText()
         </div>
     }
 
@@ -56,13 +56,31 @@
         <input class="message-input"
                @bind="messageInput"
                @bind:event="oninput"
+               @onkeydown="HandleKeyDown"
                placeholder="Type a message..." />
 
-        <button class="send-btn" @onclick="SendMessage">
-            <span class="material-icons">
-                send
-            </span>
-        </button>
+        @if (editingMessageId is null)
+        {
+            <button class="icon-btn send"
+                    @onclick="SendMessage"
+                    disabled="@(!IsConnected)">
+                <span class="material-icons">send</span>
+            </button>
+        }
+        else
+        {
+            <button class="icon-btn save"
+                    @onclick="EditMessage"
+                    disabled="@(!IsConnected)">
+                <span class="material-icons">check</span>
+            </button>
+
+            <button class="icon-btn cancel"
+                    @onclick="CancelEdit"
+                    disabled="@(!IsConnected)">
+                <span class="material-icons">close</span>
+            </button>
+        }
     </div>
 </div>
 
@@ -70,15 +88,27 @@
     RenderFragment<ChatMessage> RenderMessage => msg => @<li class="@GetMessageSeneder(msg)">
         @if (msg.From == MessageSender.Me)
         {
-            <button class="delete-bubble" @onclick="() => DeleteMessage(msg.Id)">
-                <span class="material-icons">
-                    delete
-                </span>
-            </button>
+            <div class="message-actions">
+                <button class="icon-btn small"
+                        @onclick="() => StartEdit(msg)"
+                        disabled="@(!IsConnected)">
+                    <span class="material-icons">edit</span>
+                </button>
+
+                <button class="icon-btn small danger"
+                        @onclick="() => DeleteMessage(msg.Id)"
+                        disabled="@(!IsConnected)">
+                    <span class="material-icons">delete</span>
+                </button>
+            </div>
         }
 
         <div class="bubble">
             @msg.Content
+            @if (msg.IsEdited)
+            {
+                <span class="edited-tag">edited</span>
+            }
         </div>
     </li>;
 
@@ -94,13 +124,15 @@
 @code {
     [Parameter]
     public string SessionId { get; set; } = string.Empty;
-
     private ChatSession? chatSession;
-    private string messageInput = "";
-    private string connectionStatus = "Connecting...";
     private string? connectionError;
+    private Guid? editingMessageId;
+    private string messageInput = "";
     private string? sharedKey; // ECDH-derived shared key — computed once on init, never transmitted
     private bool _eventsRegistered;
+
+    private bool IsConnected => ChatHub.State == HubConnectionState.Connected;
+    private bool IsChatValid => IsConnected && chatSession is not null && sharedKey is not null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -112,8 +144,6 @@
 
         await SetupCrypto(identity);
         await SetupSignalR();
-
-        connectionStatus = "Connected";
     }
 
     private async Task InitializeSession()
@@ -124,6 +154,7 @@
         if (string.IsNullOrWhiteSpace(SessionId) || chatSession is null)
         {
             Navigation.NavigateTo("/");
+            return;
         }
     }
 
@@ -151,6 +182,12 @@
 
         RegisterHubEvents();
 
+        if (sharedKey is null)
+        {
+            connectionError = "Crypto initialization failed.";
+            return;
+        }
+
         await ChatHub.InitializeAsync(
             hubUrl,
             Crypto.Decrypt,
@@ -176,7 +213,18 @@
         if (msg is null || chatSession is null) return;
 
         msg.From = MessageSender.Partner;
-        chatSession.StoreMessage(msg);
+
+        var existing = chatSession.Messages.FirstOrDefault(m => m.Id == msg.Id);
+
+        if (existing is null)
+        {
+            chatSession.StoreMessage(msg);
+        }
+        else if (msg.IsEdited)
+        {
+            existing.Content = msg.Content;
+            existing.IsEdited = true;
+        }
 
         await ChatStore.SaveAsync();
         await InvokeAsync(StateHasChanged);
@@ -202,9 +250,7 @@
 
     private async Task HandleStatusChanged(string status)
     {
-        connectionStatus = status;
-
-        if (status == "Connected")
+        if (IsConnected)
         {
             await ShowWaitingMessage();
         }
@@ -214,17 +260,11 @@
 
     private async Task SendMessage()
     {
-        if (string.IsNullOrWhiteSpace(messageInput)
-            || chatSession is null
-            || sharedKey is null)
-            return;
+        if (!IsChatValid || string.IsNullOrWhiteSpace(messageInput)) return;
 
-        var message = chatSession.BuildMessage(messageInput, MessageSender.Me);
-        var json = JsonSerializer.Serialize(message);
+        var message = chatSession!.BuildMessage(messageInput, MessageSender.Me);
 
-        var cipher = await Crypto.Encrypt(json, sharedKey);
-
-        await ChatHub.SendMessage(SessionId, cipher);
+        await SendEncryptedMessage(message);
 
         chatSession.StoreMessage(message);
         await ChatStore.SaveAsync();
@@ -232,25 +272,87 @@
         messageInput = "";
     }
 
+    private async Task EditMessage()
+    {
+        if (!IsChatValid || string.IsNullOrWhiteSpace(messageInput)) return;
+
+        var msg = chatSession!.Messages.FirstOrDefault(m => m.Id == editingMessageId);
+        if (msg is null) return;
+
+        msg.Content = messageInput;
+        msg.IsEdited = true;
+
+        await SendEncryptedMessage(msg);
+
+        await ChatStore.SaveAsync();
+
+        editingMessageId = null;
+        messageInput = "";
+    }
+
+    private async Task SendEncryptedMessage(ChatMessage message)
+    {
+        var json = JsonSerializer.Serialize(message);
+        var cipher = await Crypto.Encrypt(json, sharedKey!);
+
+        await ChatHub.SendMessage(SessionId, cipher);
+    }
+
     private async Task DeleteMessage(Guid id)
     {
-        if (chatSession is null) return;
+        if (!IsChatValid) return;
+
+        if (editingMessageId == id)
+        {
+            editingMessageId = null;
+            messageInput = "";
+        }
 
         await ChatHub.DeleteMessage(SessionId, id);
 
-        chatSession.DeleteMessage(id);
+        chatSession!.DeleteMessage(id);
         await ChatStore.SaveAsync();
+
         await InvokeAsync(StateHasChanged);
+    }
+
+    private void StartEdit(ChatMessage msg)
+    {
+        editingMessageId = msg.Id;
+        messageInput = msg.Content;
+    }
+
+    private void CancelEdit()
+    {
+        editingMessageId = null;
+        messageInput = "";
     }
 
     private async Task ShowWaitingMessage()
     {
         if (chatSession is null) return;
 
-        var msg = chatSession.BuildMessage("Secure session established. Waiting for partner...", MessageSender.System);
+        var connectionMsg = "Secure session established. Waiting for partner...";
+
+        var last = chatSession.Messages.LastOrDefault();
+        if (last?.Content == connectionMsg) return;
+
+        var msg = chatSession.BuildMessage(connectionMsg, MessageSender.System);
 
         chatSession.StoreMessage(msg);
         await ChatStore.SaveAsync();
+    }
+
+    private string GetConnectionText()
+    {
+        return ChatHub.State switch
+        {
+            HubConnectionState.Connected => "Connected",
+            HubConnectionState.Connecting => "Connecting...",
+            HubConnectionState.Reconnecting => "Reconnecting...",
+            HubConnectionState.Disconnected => "Disconnected",
+            _ => "Unknown"
+        };
     }
 
     public async ValueTask DisposeAsync()
@@ -258,8 +360,23 @@
         ChatHub.OnReceiveMessage -= HandleIncomingMessage;
         ChatHub.OnMessageDeleted -= HandleDeletedMessage;
         ChatHub.OnUserJoined -= HandleUserJoined;
+        ChatHub.OnStatusChanged -= HandleStatusChanged;
 
         await ChatHub.DisposeAsync();
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(messageInput) || e.Key != "Enter") return;
+
+        if (editingMessageId is null)
+        {
+            await SendMessage();
+        }
+        else
+        {
+            await EditMessage();
+        }
     }
 
     private void GoBack()

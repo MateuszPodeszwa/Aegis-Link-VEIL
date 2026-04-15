@@ -3,6 +3,7 @@
 public class ChatHubService : IAsyncDisposable
 {
     private HubConnection? _connection;
+    private string? _sessionId;
 
     public event Func<string, Task>? OnReceiveMessage;
     public event Func<Guid, Task>? OnMessageDeleted;
@@ -18,6 +19,8 @@ public class ChatHubService : IAsyncDisposable
         string sharedKey,
         string sessionId)
     {
+        _sessionId = sessionId;
+
         _connection = new HubConnectionBuilder()
             .WithUrl(hubUrl)
             .WithAutomaticReconnect()
@@ -31,14 +34,25 @@ public class ChatHubService : IAsyncDisposable
 
         _connection.Reconnected += async _ =>
         {
+            if (_sessionId is not null)
+                await _connection.SendAsync("JoinSession", _sessionId);
+
             if (OnStatusChanged != null)
                 await OnStatusChanged.Invoke("Connected");
+        };
+
+        _connection.Closed += async _ =>
+        {
+            if (OnStatusChanged != null)
+                await OnStatusChanged.Invoke("Disconnected");
         };
 
         _connection.On<string>("ReceiveMessage", async payload =>
         {
             var decryptedJson = await decryptFn(payload, sharedKey);
-            OnReceiveMessage?.Invoke(decryptedJson);
+
+            if (OnReceiveMessage != null)
+                await OnReceiveMessage.Invoke(decryptedJson);
         });
 
         _connection.On<Guid>("MessageDeleted", async id =>
@@ -54,7 +68,9 @@ public class ChatHubService : IAsyncDisposable
         });
 
         await _connection.StartAsync();
-        await _connection.SendAsync("JoinSession", sessionId);
+
+        if (_sessionId is not null)
+            await _connection.SendAsync("JoinSession", _sessionId);
 
         if (OnStatusChanged != null)
             await OnStatusChanged.Invoke("Connected");
@@ -62,13 +78,15 @@ public class ChatHubService : IAsyncDisposable
 
     public async Task SendMessage(string sessionId, string cipher)
     {
-        if (_connection is null) return;
+        if (_connection?.State != HubConnectionState.Connected) return;
+
         await _connection.SendAsync("SendMessage", sessionId, cipher);
     }
 
     public async Task DeleteMessage(string sessionId, Guid messageId)
     {
-        if (_connection is null) return;
+        if (_connection?.State != HubConnectionState.Connected) return;
+
         await _connection.SendAsync("DeleteMessage", sessionId, messageId);
     }
 
