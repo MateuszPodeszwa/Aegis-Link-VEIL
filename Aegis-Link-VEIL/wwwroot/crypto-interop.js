@@ -147,6 +147,22 @@
         }
     },
 
+    // loads settings from local storage
+    loadSettings: function () {
+        const raw = localStorage.getItem('aegis_settings');
+        return raw ? JSON.parse(raw) : null;
+    },
+
+    // saves settings or updates
+    saveSettings: function (settings) {
+        localStorage.setItem('aegis_settings', JSON.stringify(settings));
+    },
+
+    // removes settings
+    deleteSettings: function () {
+        localStorage.removeItem('aegis_settings');
+    },
+
     // loads contacts from local storage
     loadContacts: function () {
         const raw = localStorage.getItem('aegis_contacts');

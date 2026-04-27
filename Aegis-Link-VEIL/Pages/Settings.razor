@@ -1,0 +1,93 @@
+@page "/settings"
+@layout EmptyLayout
+@inject NavigationManager Navigation
+@inject SettingsService SettingsService
+
+<div class="aegis-root">
+    <div class="top-bar">
+        <button @onclick="GoBack" style="background: transparent; border: none; cursor: pointer; color: white;">
+            <span class="material-icons">
+                arrow_back
+            </span>
+        </button>
+
+        <div class="app-name">
+            Settings
+        </div>
+    </div>
+
+    <div class="settings-container">
+        <div class="settings-panel">
+
+            <div class="section-title">
+                Chat Preferences
+            </div>
+
+            <!-- Auto Delete Messages -->
+            <div class="setting-row">
+                <div class="setting-info">
+                    <div class="setting-label">
+                        Auto Delete Messages
+                    </div>
+
+                    <div class="setting-description">
+                        Automatically delete messages after a set duration.
+                    </div>
+                </div>
+
+                <label class="toggle-switch">
+                    <input type="checkbox"
+                           @bind="settings.AutoDeleteEnabled"
+                           @bind:after="SaveSettings" />
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div style="height:1.5rem;"></div>
+
+            <!-- Delete After -->
+            <div class="setting-row">
+                <div class="setting-info">
+                    <div class="setting-label">
+                        Delete After
+                    </div>
+
+                    <div class="setting-description">
+                        Duration before messages are deleted
+                    </div>
+                </div>
+
+                <select class="duration-select"
+                        @bind="settings.AutoDeleteDuration"
+                        @bind:after="SaveSettings">
+                    <option value="1 Hour">1 Hour</option>
+                    <option value="24 Hours">24 Hours</option>
+                    <option value="7 Days">7 Days</option>
+                    <option value="30 Days">30 Days</option>
+                    <option value="Never">Never</option>
+                </select>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@code {
+    private AppSettings settings = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        settings = await SettingsService.LoadAsync();
+    }
+
+    private async Task SaveSettings()
+    {
+        await SettingsService.SaveAsync(settings);
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/");
+    }
+
+}
