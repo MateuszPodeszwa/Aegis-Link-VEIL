@@ -51,6 +51,26 @@ public class SecureMessagingHub : Hub
         await Clients.GroupExcept(sessionId, Context.ConnectionId).SendAsync("ReceiveMessage", payload);
     }
 
+    public async Task DeleteMessage(string sessionId, Guid messageId)
+    {
+        if (string.IsNullOrEmpty(sessionId) || !SessionIdPattern.IsMatch(sessionId))
+        {
+            _logger.LogWarning("DeleteMessage rejected: invalid sessionId format from connection {ConnectionId}.", Context.ConnectionId);
+            throw new HubException("Invalid session ID format.");
+        }
+
+        if (!_tracker.IsMember(Context.ConnectionId, sessionId))
+        {
+            _logger.LogWarning("DeleteMessage rejected: connection {ConnectionId} is not a member of session {SessionId}.",
+                Context.ConnectionId, sessionId);
+
+            throw new HubException("You must join the session before deleting messages.");
+        }
+
+        await Clients.GroupExcept(sessionId, Context.ConnectionId)
+            .SendAsync("MessageDeleted", messageId);
+    }
+
     public override Task OnDisconnectedAsync(Exception? exception)
     {
         _tracker.Remove(Context.ConnectionId);
