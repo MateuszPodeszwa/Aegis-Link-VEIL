@@ -462,14 +462,6 @@ code {
         color: #f0eeff;
     }
 
-    .aegis-text .subtitle {
-        margin-top: 6px;
-        font-size: 0.75rem;
-        letter-spacing: 0.25em;
-        color: #9d93d0;
-        font-family: "Courier New", monospace;
-    }
-
 .aegis-dots {
     margin-top: 18px;
     display: flex;
