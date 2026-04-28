@@ -6,6 +6,7 @@
 @inject ChatCryptoService Crypto
 @inject ChatHubService ChatHub
 @inject ChatStore ChatStore
+@inject SettingsService SettingsService
 @inject IHttpClientFactory ClientFactory
 @inject IJSRuntime JS
 @inject NavigationManager Navigation
@@ -126,11 +127,14 @@
     [Parameter]
     public string SessionId { get; set; } = string.Empty;
     private ChatSession? chatSession;
+    private AppSettings _settings = new();
     private string? connectionError;
     private Guid? editingMessageId;
     private string messageInput = "";
     private string? sharedKey; // ECDH-derived shared key — computed once on init, never transmitted
     private bool _eventsRegistered;
+    private PeriodicTimer? _cleanupTimer;
+    private CancellationTokenSource? _cleanupCts;
 
     private bool IsConnected => ChatHub.State == HubConnectionState.Connected;
     private bool IsChatValid => IsConnected && chatSession is not null && sharedKey is not null;
@@ -144,7 +148,12 @@
         if (identity is null) return;
 
         await SetupCrypto(identity);
+
+        _settings = await SettingsService.LoadAsync();
+
         await SetupSignalR();
+
+        SetupAutoDeleteTimer();
     }
 
     private async Task InitializeSession()
@@ -174,6 +183,16 @@
     private async Task SetupCrypto(StoredIdentity identity)
     {
         sharedKey = await Crypto.ComputeSharedKey(identity.SecretKey, chatSession!.PartnerPublicKey);
+    }
+
+    private void SetupAutoDeleteTimer()
+    {
+        if (!_settings.AutoDeleteEnabled) return;
+
+        _cleanupCts = new CancellationTokenSource();
+        _cleanupTimer = new PeriodicTimer(TimeSpan.FromMinutes(1));
+
+        _ = RunAutoDeleteLoop(_cleanupCts.Token);
     }
 
     private async Task SetupSignalR()
@@ -299,7 +318,7 @@
         await ChatHub.SendMessage(SessionId, cipher);
     }
 
-    private async Task DeleteMessage(Guid id)
+    private async Task DeleteMessage(Guid id, bool onlyLocally = false)
     {
         if (!IsChatValid) return;
 
@@ -309,7 +328,7 @@
             messageInput = "";
         }
 
-        await ChatHub.DeleteMessage(SessionId, id);
+        if (!onlyLocally) await ChatHub.DeleteMessage(SessionId, id);
 
         chatSession!.DeleteMessage(id);
         await ChatStore.SaveAsync();
@@ -329,6 +348,49 @@
         messageInput = "";
     }
 
+    private async Task RunAutoDeleteLoop(CancellationToken token)
+    {
+        try
+        {
+            if (_cleanupTimer is null)
+                return;
+
+            while (await _cleanupTimer.WaitForNextTickAsync(token))
+            {
+                if (chatSession is null)
+                    continue;
+
+                await ApplyAutoDeleteRules();
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // expected on shutdown
+        }
+    }
+
+    private async Task ApplyAutoDeleteRules()
+    {
+        if (!_settings.AutoDeleteEnabled || chatSession is null)
+            return;
+
+        var now = DateTime.UtcNow;
+
+        var toDelete = chatSession.Messages
+            .Where(m => (m.From == MessageSender.Me || m.From == MessageSender.Partner) && m.DeleteAt <= now)
+            .Select(m => m.Id)
+            .ToList();
+
+        if (toDelete.Count == 0)
+            return;
+
+        foreach (var id in toDelete)
+        {
+            await DeleteMessage(id, true);
+        }
+    }
+
     private async Task ShowWaitingMessage()
     {
         if (chatSession is null) return;
@@ -342,6 +404,22 @@
 
         chatSession.StoreMessage(msg);
         await ChatStore.SaveAsync();
+    }
+
+    private DateTime GetDeleteAt()
+    {
+        var duration = _settings.AutoDeleteDuration;
+
+        return duration switch
+        {
+            "1 Minute" => DateTime.UtcNow.AddMinutes(1),
+            "5 Minutes" => DateTime.UtcNow.AddMinutes(5),
+            "30 Minutes" => DateTime.UtcNow.AddMinutes(30),
+            "1 Hour" => DateTime.UtcNow.AddHours(1),
+            "24 Hours" => DateTime.UtcNow.AddDays(1),
+            "Never" => DateTime.MinValue,
+            _ => DateTime.MinValue
+        };
     }
 
     private string GetConnectionText()
@@ -363,6 +441,10 @@
         ChatHub.OnUserJoined -= HandleUserJoined;
         ChatHub.OnStatusChanged -= HandleStatusChanged;
 
+        _cleanupCts?.Cancel();
+        _cleanupTimer?.Dispose();
+        _cleanupCts?.Dispose();
+
         await ChatHub.DisposeAsync();
     }
 
@@ -371,7 +453,8 @@
         var message = new ChatMessage
         {
             Content = content,
-            From = from
+            From = from,
+            DeleteAt = GetDeleteAt()
         };
 
         return message;

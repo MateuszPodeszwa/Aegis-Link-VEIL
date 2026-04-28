@@ -60,10 +60,11 @@
                 <select class="duration-select"
                         @bind="settings.AutoDeleteDuration"
                         @bind:after="SaveSettings">
+                    <option value="1 Minute">1 Minute</option>
+                    <option value="5 Minutes">5 Minutes</option>
+                    <option value="30 Minutes">30 Minutes</option>
                     <option value="1 Hour">1 Hour</option>
                     <option value="24 Hours">24 Hours</option>
-                    <option value="7 Days">7 Days</option>
-                    <option value="30 Days">30 Days</option>
                     <option value="Never">Never</option>
                 </select>
             </div>
