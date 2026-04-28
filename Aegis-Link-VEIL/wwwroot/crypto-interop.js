@@ -52,7 +52,7 @@
 
     // Remove only Aegis Link data from this device.
     wipeDevice: function () {
-        const aegisStorageKeys = ['aegis_identity', 'aegis_chats'];
+        const aegisStorageKeys = ['aegis_identity', 'aegis_chats', 'aegis_contacts', 'aegis_settings'];
 
         aegisStorageKeys.forEach((key) => {
             localStorage.removeItem(key);
