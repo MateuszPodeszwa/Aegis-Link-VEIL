@@ -6,11 +6,8 @@
         <FocusOnNavigate RouteData="@routeData" Selector="h1"/>
     </Found>
     <NotFound>
-        <LayoutView Layout="@typeof(MainLayout)">
-            <h3>Page Not Found</h3>
-            <p>Sorry, there's nothing at this address.</p>
-        </LayoutView>
-   </NotFound>
+        <NotFound />
+    </NotFound>
 </Router>
 
 @code {

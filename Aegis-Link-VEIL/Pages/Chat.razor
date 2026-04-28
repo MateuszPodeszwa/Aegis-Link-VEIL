@@ -11,13 +11,14 @@
 @inject NavigationManager Navigation
 
 <div class="aegis-root">
+
     <div class="top-bar">
-        <button @onclick="GoBack" style="background: transparent; border: none; cursor: pointer; color: white;">
+        <button @onclick='() => Navigation.NavigateTo("/")' style="background: transparent; border: none; cursor: pointer; color: white;">
             <span class="material-icons">
                 arrow_back
             </span>
         </button>
-
+        
         <div class="app-name">
             @(chatSession?.PartnerName ?? "Anonymous user")
         </div>
@@ -241,7 +242,7 @@
     {
         if (chatSession is null) return;
 
-        var msg = chatSession.BuildMessage("Partner joined the secure session.", MessageSender.System);
+        var msg = BuildMessage("Partner joined the secure session.", MessageSender.System);
 
         chatSession.StoreMessage(msg);
         await ChatStore.SaveAsync();
@@ -262,11 +263,11 @@
     {
         if (!IsChatValid || string.IsNullOrWhiteSpace(messageInput)) return;
 
-        var message = chatSession!.BuildMessage(messageInput, MessageSender.Me);
+        var message = BuildMessage(messageInput, MessageSender.Me);
 
         await SendEncryptedMessage(message);
 
-        chatSession.StoreMessage(message);
+        chatSession!.StoreMessage(message);
         await ChatStore.SaveAsync();
 
         messageInput = "";
@@ -337,7 +338,7 @@
         var last = chatSession.Messages.LastOrDefault();
         if (last?.Content == connectionMsg) return;
 
-        var msg = chatSession.BuildMessage(connectionMsg, MessageSender.System);
+        var msg = BuildMessage(connectionMsg, MessageSender.System);
 
         chatSession.StoreMessage(msg);
         await ChatStore.SaveAsync();
@@ -365,6 +366,17 @@
         await ChatHub.DisposeAsync();
     }
 
+    private ChatMessage BuildMessage(string content, MessageSender from)
+    {
+        var message = new ChatMessage
+        {
+            Content = content,
+            From = from
+        };
+
+        return message;
+    }
+
     private async Task HandleKeyDown(KeyboardEventArgs e)
     {
         if (string.IsNullOrWhiteSpace(messageInput) || e.Key != "Enter") return;
@@ -377,11 +389,6 @@
         {
             await EditMessage();
         }
-    }
-
-    private void GoBack()
-    {
-        Navigation.NavigateTo("/contacts");
     }
 
     private record StoredIdentity(string AegisId, string PublicKey, string SecretKey);

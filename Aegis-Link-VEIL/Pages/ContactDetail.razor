@@ -11,12 +11,16 @@
 
 <div class="aegis-root">
 
-    <div class="page-header">
-        <button class="back-btn" @onclick='() => Navigation.NavigateTo("/")'>
-            ← Back
+    <div class="top-bar">
+        <button @onclick='() => Navigation.NavigateTo("/")' style="background: transparent; border: none; cursor: pointer; color: white;">
+            <span class="material-icons">
+                arrow_back
+            </span>
         </button>
-        <div class="page-title">Contact</div>
-        <div style="width: 60px;"></div>
+        
+        <div class="app-name">
+            Contact
+        </div>
     </div>
 
     @if (isLoading)

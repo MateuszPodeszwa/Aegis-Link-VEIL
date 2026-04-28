@@ -405,31 +405,143 @@ code {
         border-color: #e05555;
     }
 
-/* Home page contact additions */
+/* Loading Page */
 
-.section-header {
-    width: 100%;
-    max-width: 420px;
-    padding: 1.6rem 1.5rem 0.5rem;
+#aegis-loader,
+.aegis-loader {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at center, #2d1f6e 0%, #0d0d14 70%);
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
+    overflow: hidden;
+    color: #e8e6f0;
 }
 
-.add-contact-btn {
-    background: transparent;
-    border: 1px solid #3a3660;
-    border-radius: 6px;
-    color: #a99df7;
-    font-family: 'Courier New', monospace;
-    font-size: 11px;
-    padding: 4px 10px;
-    cursor: pointer;
-    transition: all 0.15s;
-    letter-spacing: 0.06em;
+.aegis-ring {
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    border: 2px solid rgba(122, 109, 245, 0.25);
+    border-top: 2px solid #7a6df5;
+    border-radius: 50%;
+    animation: spin 2.5s linear infinite;
+    filter: drop-shadow(0 0 10px rgba(91, 78, 240, 0.5));
 }
 
-    .add-contact-btn:hover {
-        border-color: #6c63ff;
-        color: #6c63ff;
+    .aegis-ring.ring-2 {
+        width: 240px;
+        height: 240px;
+        border: 1px solid rgba(120, 110, 255, 0.15);
+        border-top: 1px solid #5b4ef0;
+        animation-duration: 4s;
+        opacity: 0.7;
     }
+
+.aegis-core {
+    width: 24px;
+    height: 24px;
+    background: radial-gradient(circle, #ffffff 0%, #7a6df5 40%, transparent 70%);
+    border-radius: 50%;
+    box-shadow: 0 0 25px #7a6df5;
+    z-index: 2;
+}
+
+.aegis-text {
+    margin-top: 160px;
+    text-align: center;
+    z-index: 2;
+}
+
+    .aegis-text .title {
+        font-size: 1.6rem;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        color: #f0eeff;
+    }
+
+    .aegis-text .subtitle {
+        margin-top: 6px;
+        font-size: 0.75rem;
+        letter-spacing: 0.25em;
+        color: #9d93d0;
+        font-family: "Courier New", monospace;
+    }
+
+.aegis-dots {
+    margin-top: 18px;
+    display: flex;
+    gap: 6px;
+}
+
+    .aegis-dots span {
+        width: 6px;
+        height: 6px;
+        background: #7a6df5;
+        border-radius: 50%;
+        animation: pulse 1.2s infinite ease-in-out;
+    }
+
+        .aegis-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .aegis-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 0.3;
+        transform: scale(0.8);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+}
+
+/* Global Page Styles */
+
+.aegis-root {
+    background: linear-gradient(170deg, #2d1f6e 0%, #1a1240 30%, #0d0d14 70%);
+    color: #e8e6f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: 'Trebuchet MS', sans-serif;
+    min-height: 100vh;
+    min-height: 100dvh;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.top-bar {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 40px 1fr 40px;
+    align-items: center;
+    padding: 1.5rem;
+    box-sizing: border-box;
+}
+
+.app-name {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #f0eeff;
+}
