@@ -6,17 +6,6 @@
     public string SessionKey { get; set; } = string.Empty;
     public List<ChatMessage> Messages { get; set; } = new();
 
-    public ChatMessage BuildMessage(string content, MessageSender from)
-    {
-        var message = new ChatMessage
-        {
-            Content = content,
-            From = from
-        };
-
-        return message;
-    }
-
     public void StoreMessage(ChatMessage message)
     {
         Messages.Add(message);

@@ -9,13 +9,17 @@
 <PageTitle>Killswitch — Aegis Link</PageTitle>
 
 <div class="aegis-root">
+
     <div class="top-bar">
-        <button class="back-btn" @onclick="@(() => Navigation.NavigateTo("/"))">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
-            </svg>
+        <button @onclick='() => Navigation.NavigateTo("/")' style="background: transparent; border: none; cursor: pointer; color: white;">
+            <span class="material-icons">
+                arrow_back
+            </span>
         </button>
-        <div class="app-name">Killswitch</div>
+        
+        <div class="app-name">
+            Killswitch
+        </div>
     </div>
 
     <div style="padding: 2rem 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; flex: 1;">

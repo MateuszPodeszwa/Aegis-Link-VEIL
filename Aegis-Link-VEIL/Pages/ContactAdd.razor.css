@@ -1,0 +1,133 @@
+﻿/* Form Container */
+.form-area {
+    width: min(92%, 520px);
+    margin: 1rem auto 3rem;
+    padding: 1.5rem;
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(120,110,255,.18);
+    backdrop-filter: blur(14px);
+    border-radius: 24px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.35);
+}
+
+/* Fields */
+.field-group {
+    margin-bottom: 1.5rem;
+}
+
+.field-label {
+    display: block;
+    margin-bottom: .55rem;
+    font-size: .95rem;
+    color: #cfcaf9;
+    letter-spacing: .03em;
+}
+
+.required {
+    color: #ff8a8a;
+}
+
+/* Inputs */
+.aegis-input {
+    width: 100%;
+    box-sizing: border-box;
+    background: rgba(42,36,80,.4);
+    border: 1px solid #5b4ef0;
+    border-radius: 18px;
+    color: #fff;
+    padding: .95rem 1rem;
+    font-size: 1rem;
+    outline: none;
+    transition: .2s ease;
+}
+
+.aegis-input:focus {
+    border-color: #7a6df5;
+    box-shadow: 0 0 0 2px rgba(122,109,245,.25);
+}
+
+.aegis-input::placeholder {
+    color: #9d93d0;
+}
+
+/* Validation states */
+.input-success {
+    border-color: #4caf50;
+    box-shadow: 0 0 0 2px rgba(76,175,80,.18);
+}
+
+.input-error {
+    border-color: #ff6b6b;
+    box-shadow: 0 0 0 2px rgba(255,107,107,.15);
+}
+
+/* Textarea */
+.aegis-textarea {
+    resize: vertical;
+    min-height: 110px;
+    line-height: 1.45;
+}
+
+/* Feedback */
+.field-hint {
+    margin-top: .55rem;
+    font-size: .82rem;
+    color: #bfbaff;
+    letter-spacing: .02em;
+}
+
+.field-hint.success {
+    color: #7be495;
+}
+
+.field-hint.error {
+    color: #ff8a8a;
+}
+
+.error-text {
+    margin-top: -.25rem;
+    margin-bottom: 1rem;
+    padding: .8rem 1rem;
+    border-radius: 14px;
+    background: rgba(220,60,60,.12);
+    border: 1px solid rgba(255,107,107,.25);
+    color: #ff9a9a;
+    font-size: .9rem;
+}
+
+/* Character counter */
+.char-count {
+    margin-top: .45rem;
+    text-align: right;
+    font-size: .72rem;
+    color: #9d93d0;
+    letter-spacing: .03em;
+}
+
+/* CTA Button */
+.cta-btn {
+    width: 100%;
+    border: none;
+    border-radius: 18px;
+    padding: 1rem 1.25rem;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: .03em;
+    color: white;
+    cursor: pointer;
+    background: linear-gradient(135deg, #5b4ef0, #7a6df5);
+    box-shadow: 0 6px 18px rgba(91,78,240,.35);
+    transition: .2s ease;
+}
+
+.cta-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(91,78,240,.45);
+}
+
+.cta-btn:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}

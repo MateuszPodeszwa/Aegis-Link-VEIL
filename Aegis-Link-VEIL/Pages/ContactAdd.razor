@@ -1,17 +1,24 @@
 ﻿@page "/contacts/add"
+@layout EmptyLayout
 @inject ContactService ContactService
 @inject NavigationManager Navigation
 @inject IHttpClientFactory ClientFactory
 @inject IJSRuntime JS
+@using AegisLink.Shared
 @using System.Net.Http.Json
 
 <div class="aegis-root">
 
-    <div class="page-header">
-        <button class="back-btn" @onclick='() => Navigation.NavigateTo("/contacts")'>
-            ← Back
+    <div class="top-bar">
+        <button @onclick='() => Navigation.NavigateTo("/")' style="background: transparent; border: none; cursor: pointer; color: white;">
+            <span class="material-icons">
+                arrow_back
+            </span>
         </button>
-        <div class="page-title">Add Contact</div>
+        
+        <div class="app-name">
+            Create Contact
+        </div>
     </div>
 
     <div class="form-area">
@@ -58,7 +65,7 @@
                     class="aegis-input"
                     @bind="nickname"
                     @bind:event="oninput"
-                    placeholder="What do you call this person?"
+                    placeholder="What do you call them?"
                     maxlength="32" />
             </div>
 
@@ -78,16 +85,13 @@
                 <div class="error-text">@errorMessage</div>
             }
 
-            <button
-                class="cta-btn"
-                @onclick="SaveContact"
-                disabled="@(string.IsNullOrWhiteSpace(nickname) || isSaving)">
+            <button class="cta-btn"
+                    @onclick="SaveContact"
+                    disabled="@(string.IsNullOrWhiteSpace(nickname) || isSaving)">
                 @(isSaving ? "Saving..." : "Save Contact")
             </button>
         }
-
     </div>
-
 </div>
 
 @code {
@@ -113,31 +117,48 @@
 
     private async Task OnIdInput(ChangeEventArgs e)
     {
-        var value = (e.Value?.ToString() ?? string.Empty).ToUpperInvariant();
-        aegisIdInput = value;
+        SetInput((e.Value?.ToString() ?? string.Empty).ToUpperInvariant());
 
+        // Only look up once we have exactly 8 characters
+        if (aegisIdInput.Length != 8) return;
+
+        // Check it's not their own ID
+        if (IsSelfId(aegisIdInput)) return;
+
+        // Check if already saved
+        if (await HandleAlreadyExists(aegisIdInput)) return;
+
+        // Look up the ID on the server
+        await LookupIdentityAsync(aegisIdInput);
+    }
+
+    private void SetInput(string value)
+    {
+        aegisIdInput = value;
         // Reset state when the input changes
         lookupState = LookupState.Idle;
         foundPublicKey = string.Empty;
+    }
 
-        // Only look up once we have exactly 8 characters
-        if (value.Length != 8) return;
+    private bool IsSelfId(string value)
+    {
+        if (value != myAegisId) return false;
 
-        // Check it's not their own ID
-        if (value == myAegisId)
-        {
-            lookupState = LookupState.IsSelf;
-            return;
-        }
+        lookupState = LookupState.IsSelf;
+        return true;
+    }
 
-        // Check if already saved
-        if (await ContactService.ExistsAsync(value))
-        {
-            lookupState = LookupState.AlreadyAdded;
-            return;
-        }
+    private async Task<bool> HandleAlreadyExists(string value)
+    {
+        if (!await ContactService.ExistsAsync(value))
+            return false;
 
-        // Look up the ID on the server
+        lookupState = LookupState.AlreadyAdded;
+        return true;
+    }
+
+    private async Task LookupIdentityAsync(string value)
+    {
         lookupState = LookupState.Looking;
         StateHasChanged();
 
@@ -146,34 +167,12 @@
             var client = ClientFactory.CreateClient("WebAPI");
             var response = await client.GetAsync($"identity/lookup/{value}");
 
-            if (!response.IsSuccessStatusCode)
+            var result = await HandleLookupResponse(response, value);
+
+            if (result)
             {
-                lookupState = LookupState.NotFound;
-                return;
+                lookupState = LookupState.Found;
             }
-
-            var result = await response.Content.ReadFromJsonAsync<UserKeyGetResult>();
-            if (result is null)
-            {
-                lookupState = LookupState.NotFound;
-                return;
-            }
-
-            // Client-side verification: re-derive the ID from the returned
-            // public key and confirm it matches what we asked for
-            // This ensures the server hasn't given us a wrong key
-            var derivedId = await JS.InvokeAsync<string>(
-                "aegisCrypto.createAegisId", result.PublicKey);
-
-            if (derivedId != value)
-            {
-                lookupState = LookupState.NotFound;
-                errorMessage = "Key verification failed.";
-                return;
-            }
-
-            foundPublicKey = result.PublicKey;
-            lookupState = LookupState.Found;
         }
         catch
         {
@@ -181,28 +180,54 @@
         }
     }
 
+    private async Task<bool> HandleLookupResponse(HttpResponseMessage response, string expectedId)
+    {
+        if (!response.IsSuccessStatusCode)
+        {
+            lookupState = LookupState.NotFound;
+            return false;
+        }
+
+        var result = await response.Content.ReadFromJsonAsync<UserKeyGetResult>();
+        if (result is null)
+        {
+            lookupState = LookupState.NotFound;
+            return false;
+        }
+
+        // Client-side verification: re-derive the ID from the returned
+        // public key and confirm it matches what we asked for
+        // This ensures the server hasn't given us a wrong key
+        var derivedId = await JS.InvokeAsync<string>(
+            "aegisCrypto.createAegisId",
+            result.PublicKey
+        );
+
+        if (derivedId != expectedId)
+        {
+            lookupState = LookupState.NotFound;
+            errorMessage = "Key verification failed.";
+            return false;
+        }
+
+        foundPublicKey = result.PublicKey;
+        return true;
+    }
+
     private async Task SaveContact()
     {
-        if (string.IsNullOrWhiteSpace(nickname)) return;
+        if (string.IsNullOrWhiteSpace(nickname))
+            return;
 
         isSaving = true;
         errorMessage = string.Empty;
 
         try
         {
-            var colour = await ContactService.GetColourAsync(aegisIdInput);
-
-            var contact = new Contact
-            {
-                AegisId = aegisIdInput,
-                PublicKey = foundPublicKey,
-                Nickname = nickname.Trim(),
-                Note = note.Trim(),
-                Colour = colour
-            };
+            var contact = await BuildContactAsync();
 
             await ContactService.SaveAsync(contact);
-            Navigation.NavigateTo("/contacts");
+            Navigation.NavigateTo("/");
         }
         catch (Exception ex)
         {
@@ -212,6 +237,20 @@
         {
             isSaving = false;
         }
+    }
+
+    private async Task<Contact> BuildContactAsync()
+    {
+        var colour = await ContactService.GetColourAsync(aegisIdInput);
+
+        return new Contact
+        {
+            AegisId = aegisIdInput,
+            PublicKey = foundPublicKey,
+            Nickname = nickname.Trim(),
+            Note = note.Trim(),
+            Colour = colour
+        };
     }
 
     private record StoredIdentity(string AegisId, string PublicKey, string SecretKey);

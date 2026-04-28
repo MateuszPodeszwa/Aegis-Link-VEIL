@@ -1,0 +1,55 @@
+﻿/* Not Found Layout */
+.notfound-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    height: 100dvh;
+    text-align: center;
+    padding: 2rem;
+    color: #e8e6f0;
+}
+
+/* Title */
+.notfound-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #f0eeff;
+}
+
+/* Text */
+.notfound-text {
+    font-size: 1rem;
+    color: #bfbaff;
+    opacity: 0.9;
+}
+
+/* Button */
+.notfound-btn {
+    width: 100%;
+    max-width: 220px;
+    margin-top: 1.5rem;
+    padding: 0.9rem 1.2rem;
+    border-radius: 18px;
+    border: 1px solid rgba(120,110,255,.25);
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ffffff;
+    cursor: pointer;
+    background: rgba(91,78,240,.25);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 6px 18px rgba(91,78,240,.25);
+    transition: 0.2s ease;
+}
+
+.notfound-btn:hover {
+    transform: translateY(-2px);
+    background: rgba(91,78,240,.4);
+    box-shadow: 0 10px 24px rgba(91,78,240,.35);
+}
+
+.notfound-btn:active {
+    transform: scale(0.98);
+}
