@@ -2,6 +2,8 @@
 
 Short, straight‑talk docs covering the full codebase. Every section links to the next bit and lists the code elements inside.
 
+Location: `/docs/MDocs-Implemendation`.
+
 ## Reading order
 
 1. [Project overview and tech choices](01-overview.md)
