@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using AegisLink.Tests.TestUtilities;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.SignalR;

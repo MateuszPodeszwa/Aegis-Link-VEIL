@@ -1,7 +1,6 @@
 using System.Security.Claims;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.AspNetCore.SignalR.Protocol;
-using Microsoft.Extensions.Features;
 
 namespace AegisLink.Tests.TestUtilities;
 

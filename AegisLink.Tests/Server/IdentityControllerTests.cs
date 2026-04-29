@@ -48,11 +48,11 @@ public class IdentityControllerTests
         var publicKeyBytes = Enumerable.Range(1, 32).Select(i => (byte)i).ToArray();
         var publicKey = Convert.ToBase64String(publicKeyBytes);
         var aegisId = AegisIdService.CreateId(publicKeyBytes);
-        context.UserKeys.Add(new UserKey { AegisId = aegisId, PublicKey = publicKey });
+        context.UserKeys.Add(new UserKey { AegisId = aegisId, PublicKey = "DIFFERENT" });
         await context.SaveChangesAsync();
         var controller = new IdentityController(context);
 
-        var result = await controller.Register(new UserKeyReg(aegisId, Convert.ToBase64String(Enumerable.Range(2, 32).Select(i => (byte)i).ToArray())));
+        var result = await controller.Register(new UserKeyReg(aegisId, publicKey));
 
         Assert.IsType<ConflictObjectResult>(result);
     }
