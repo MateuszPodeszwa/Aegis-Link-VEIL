@@ -5,8 +5,8 @@ public class ChatSessionTests
     [Fact]
     public void StoreMessage_AppendsMessage()
     {
-        var session = new ChatSession();
-        var message = new ChatMessage { Content = "hello" };
+        var session = new global::ChatSession();
+        var message = new global::ChatMessage { Content = "hello" };
 
         session.StoreMessage(message);
 
@@ -17,8 +17,8 @@ public class ChatSessionTests
     [Fact]
     public void DeleteMessage_RemovesMatchingMessage()
     {
-        var session = new ChatSession();
-        var message = new ChatMessage { Content = "hello" };
+        var session = new global::ChatSession();
+        var message = new global::ChatMessage { Content = "hello" };
         session.StoreMessage(message);
 
         session.DeleteMessage(message.Id);
@@ -29,8 +29,8 @@ public class ChatSessionTests
     [Fact]
     public void DeleteMessage_IgnoresMissingMessage()
     {
-        var session = new ChatSession();
-        session.StoreMessage(new ChatMessage());
+        var session = new global::ChatSession();
+        session.StoreMessage(new global::ChatMessage());
 
         session.DeleteMessage(Guid.NewGuid());
 

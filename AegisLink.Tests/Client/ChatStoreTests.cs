@@ -8,14 +8,14 @@ public class ChatStoreTests
     [Fact]
     public async Task InitializeAsync_LoadsStoredChats()
     {
-        var storedChats = new List<ChatSession>
+        var storedChats = new List<global::ChatSession>
         {
-            new ChatSession { SessionKey = "session-1", PartnerName = "Alice" }
+            new global::ChatSession { SessionKey = "session-1", PartnerName = "Alice" }
         };
         var json = JsonSerializer.Serialize(storedChats);
         var js = new TestJsRuntime((identifier, _) =>
             identifier == "sessionStorage.getItem" ? json : null);
-        var store = new ChatStore(js);
+        var store = new global::ChatStore(js);
 
         await store.InitializeAsync();
 
@@ -58,14 +58,14 @@ public class ChatStoreTests
 
             return null;
         });
-        var store = new ChatStore(js);
-        store.Chats.Add(new ChatSession { SessionKey = "session-1" });
+        var store = new global::ChatStore(js);
+        store.Chats.Add(new global::ChatSession { SessionKey = "session-1" });
 
         await store.SaveAsync();
 
         Assert.NotNull(savedArgs);
         Assert.Equal("aegis_chats", savedArgs![0]);
-        var savedChats = JsonSerializer.Deserialize<List<ChatSession>>(savedArgs![1]?.ToString() ?? string.Empty);
+        var savedChats = JsonSerializer.Deserialize<List<global::ChatSession>>(savedArgs![1]?.ToString() ?? string.Empty);
         Assert.NotNull(savedChats);
         Assert.Single(savedChats!);
         Assert.Equal("session-1", savedChats![0].SessionKey);
@@ -74,8 +74,8 @@ public class ChatStoreTests
     [Fact]
     public void GetChat_ReturnsChatWhenPresent()
     {
-        var store = new ChatStore(new TestJsRuntime((_, _) => null));
-        store.Chats.Add(new ChatSession { SessionKey = "session-1" });
+        var store = new global::ChatStore(new TestJsRuntime((_, _) => null));
+        store.Chats.Add(new global::ChatSession { SessionKey = "session-1" });
 
         var chat = store.GetChat("session-1");
 
@@ -86,7 +86,7 @@ public class ChatStoreTests
     [Fact]
     public void CreateChat_ReusesExistingChat()
     {
-        var store = new ChatStore(new TestJsRuntime((_, _) => null));
+        var store = new global::ChatStore(new TestJsRuntime((_, _) => null));
         var existing = store.CreateChat("session-1", "Alice", "ABCDEFGH", "pub");
 
         var second = store.CreateChat("session-1", "Bob", "IJKLMNO", "pub2");

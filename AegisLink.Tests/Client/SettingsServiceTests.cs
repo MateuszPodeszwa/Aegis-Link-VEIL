@@ -37,7 +37,7 @@ public class SettingsServiceTests
 
         Assert.NotNull(args);
         Assert.NotNull(args![0]);
-        var saved = Assert.IsType<AppSettings>(args![0]);
+        var saved = Assert.IsType<global::AppSettings>(args![0]);
         Assert.Equal("Never", saved.AutoDeleteDuration);
     }
 }

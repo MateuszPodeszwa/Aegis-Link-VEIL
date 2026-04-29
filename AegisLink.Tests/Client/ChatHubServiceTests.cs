@@ -15,7 +15,7 @@ public class ChatHubServiceTests
     public async Task InitializeAsync_ReceivesHubEvents()
     {
         await using var host = await TestChatHost.StartAsync();
-        var service = new ChatHubService();
+        var service = new global::ChatHubService();
         var received = new TaskCompletionSource<string>();
         var deleted = new TaskCompletionSource<Guid>();
         var joined = new TaskCompletionSource<bool>();
@@ -67,7 +67,7 @@ public class ChatHubServiceTests
     [Fact]
     public async Task SendMessage_IgnoresWhenDisconnected()
     {
-        var service = new ChatHubService();
+        var service = new global::ChatHubService();
 
         await service.SendMessage("session-1", "cipher");
 

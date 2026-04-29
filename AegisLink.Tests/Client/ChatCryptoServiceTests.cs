@@ -9,7 +9,7 @@ public class ChatCryptoServiceTests
     {
         var js = new TestJsRuntime((identifier, _) =>
             identifier == "aegisCrypto.boxEncrypt" ? "encrypted" : null);
-        var service = new ChatCryptoService(js);
+        var service = new global::ChatCryptoService(js);
 
         var result = await service.Encrypt("{}", "key");
 
@@ -22,7 +22,7 @@ public class ChatCryptoServiceTests
     {
         var js = new TestJsRuntime((identifier, _) =>
             identifier == "aegisCrypto.boxDecrypt" ? "decrypted" : null);
-        var service = new ChatCryptoService(js);
+        var service = new global::ChatCryptoService(js);
 
         var result = await service.Decrypt("payload", "key");
 
@@ -35,7 +35,7 @@ public class ChatCryptoServiceTests
     {
         var js = new TestJsRuntime((identifier, _) =>
             identifier == "aegisCrypto.computeSharedKey" ? "shared" : null);
-        var service = new ChatCryptoService(js);
+        var service = new global::ChatCryptoService(js);
 
         var result = await service.ComputeSharedKey("secret", "public");
 
