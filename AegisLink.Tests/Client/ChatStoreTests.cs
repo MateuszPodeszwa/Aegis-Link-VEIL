@@ -37,7 +37,7 @@ public class ChatStoreTests
 
             return null;
         });
-        var store = new ChatStore(js);
+        var store = new global::ChatStore(js);
 
         await store.InitializeAsync();
         await store.InitializeAsync();
