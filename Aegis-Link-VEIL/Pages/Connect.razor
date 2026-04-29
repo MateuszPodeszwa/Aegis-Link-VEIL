@@ -1,6 +1,7 @@
 @layout EmptyLayout
 @page "/connect"
 @inject ChatStore ChatStore
+@inject ContactService ContactService
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 @inject IHttpClientFactory ClientFactory
@@ -42,6 +43,10 @@
             else if (lookupState == LookupState.NotFound)
             {
                 <div class="field-hint error">That Aegis ID doesn't exist.</div>
+            }
+            else if (lookupState == LookupState.AlreadyAdded)
+            {
+                <div class="field-hint error">You already have this contact saved.</div>
             }
             else if (lookupState == LookupState.IsSelf)
             {
@@ -115,7 +120,7 @@
 }
 
 @code {
-    private enum LookupState { Idle, Looking, Found, NotFound, IsSelf }
+    private enum LookupState { Idle, Looking, Found, NotFound, AlreadyAdded, IsSelf }
 
     private string aegisIdInput = string.Empty;
     private string foundPublicKey = string.Empty;
@@ -145,6 +150,9 @@
         // Check it's not their own ID
         if (IsSelfId(aegisIdInput)) return;
 
+        // Check if already saved
+        if (await HandleAlreadyExists(aegisIdInput)) return;
+
         // Look up the ID on the server
         await LookupIdentityAsync(aegisIdInput);
     }
@@ -162,6 +170,15 @@
         if (value != myAegisId) return false;
 
         lookupState = LookupState.IsSelf;
+        return true;
+    }
+
+    private async Task<bool> HandleAlreadyExists(string value)
+    {
+        if (!await ContactService.ExistsAsync(value))
+            return false;
+
+        lookupState = LookupState.AlreadyAdded;
         return true;
     }
 
