@@ -405,13 +405,49 @@ code {
         border-color: #e05555;
     }
 
+/* ---------- Global Aegis Scrollbar ---------- */
+
+/* Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #7a6df5 rgba(22,18,45,.75);
+}
+
+/* Chrome / Edge / Safari */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(22,18,45,.75);
+    border-radius: 999px;
+    box-shadow: inset 0 0 8px rgba(0,0,0,.35);
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient( 180deg, #5b4ef0, #7a6df5 );
+    border-radius: 999px;
+    border: 2px solid rgba(22,18,45,.75);
+    background-clip: padding-box;
+    box-shadow: 0 0 8px rgba(122,109,245,.25);
+}
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient( 180deg, #7063f5, #948bff );
+    }
+
+::-webkit-scrollbar-corner {
+    background: rgba(22,18,45,.75);
+}
+
 /* Loading Page */
 
 #aegis-loader,
 .aegis-loader {
     position: fixed;
     inset: 0;
-    background: radial-gradient(circle at center, #2d1f6e 0%, #0d0d14 70%);
+    background: linear-gradient(170deg, #2d1f6e 0%, #1a1240 30%, #0d0d14 70%);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -460,14 +496,6 @@ code {
         font-weight: 700;
         letter-spacing: 0.2em;
         color: #f0eeff;
-    }
-
-    .aegis-text .subtitle {
-        margin-top: 6px;
-        font-size: 0.75rem;
-        letter-spacing: 0.25em;
-        color: #9d93d0;
-        font-family: "Courier New", monospace;
     }
 
 .aegis-dots {
