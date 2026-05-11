@@ -1,0 +1,15 @@
+**/bin/
+**/obj/
+**/.vs/
+**/.idea/
+**/.vscode/
+**/node_modules/
+**/.DS_Store
+**/TestResults/
+**/*.user
+**/*.suo
+**/*.nupkg
+**/coverage/
+.git/
+.gitignore
+README.md
