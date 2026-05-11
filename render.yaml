@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: aegis-link-veil
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    autoDeploy: true
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ConnectionStrings__AegisLink
+        value: Data Source=/data/aegislink.db
+    disk:
+      name: aegis-link-data
+      mountPath: /data
+      sizeGB: 1

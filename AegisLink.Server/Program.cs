@@ -8,23 +8,27 @@ var builder = WebApplication.CreateBuilder(args);
 
 // --- Services ---
 var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? [];
+var hasAllowedOrigins = allowedOrigins.Length > 0;
 
-if (allowedOrigins.Length == 0 && builder.Environment.IsDevelopment())
+if (!hasAllowedOrigins && builder.Environment.IsDevelopment())
 {
     throw new InvalidOperationException(
         "No CORS origins configured. Add at least one entry under 'AllowedOrigins' in appsettings.Development.json.");
 }
 
-builder.Services.AddCors(options =>
+if (hasAllowedOrigins)
 {
-    options.AddPolicy("_myAllowSpecificOrigins", policy =>
+    builder.Services.AddCors(options =>
     {
-        policy.WithOrigins(allowedOrigins)
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials();
+        options.AddPolicy("_myAllowSpecificOrigins", policy =>
+        {
+            policy.WithOrigins(allowedOrigins)
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();
+        });
     });
-});
+}
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
@@ -38,8 +42,11 @@ builder.Services.AddResponseCompression(opts =>
         [ "application/octet-stream" ]);
 });
 
-builder.Services.AddDbContext<AegisLinkDbContext>(options =>
-    options.UseSqlite("Data Source=aegislink.db"));
+var sqliteConnectionString =
+    builder.Configuration.GetConnectionString("AegisLink")
+    ?? "Data Source=aegislink.db";
+
+builder.Services.AddDbContext<AegisLinkDbContext>(options => options.UseSqlite(sqliteConnectionString));
 
 var app = builder.Build();
 
@@ -51,10 +58,18 @@ using (var scope = app.Services.CreateScope())
 
 // --- Middleware ---
 app.UseResponseCompression();
-app.UseHttpsRedirection();
+if (app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseRouting();
-app.UseCors("_myAllowSpecificOrigins");
+if (hasAllowedOrigins)
+{
+    app.UseCors("_myAllowSpecificOrigins");
+}
 app.UseAuthorization();
+app.UseDefaultFiles();
+app.UseStaticFiles();
 
 app.MapHub<SecureMessagingHub>("/chatHub");
 
@@ -64,5 +79,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapControllers();
+app.MapFallbackToFile("index.html");
 
 app.Run();

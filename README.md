@@ -88,6 +88,30 @@
 
 ---
 
+## Render Deployment (Docker, single service)
+
+This repository now includes:
+
+- `Dockerfile` — builds the Blazor WASM client and ASP.NET server, then serves both from one container.
+- `render.yaml` — Render Blueprint for one web service + persistent disk for SQLite.
+
+### Deploy
+
+1. Push this repository to GitHub.
+2. In Render, choose **New +** → **Blueprint** and connect this repo.
+3. Render will detect `render.yaml` and create the `aegis-link-veil` service.
+4. Once deployed, open the service URL — the same origin serves:
+   - Blazor client (`/`)
+   - API (`/identity/*`)
+   - SignalR hub (`/chatHub`)
+
+### Notes
+
+- SQLite is configured to use `/data/aegislink.db` on a Render disk.
+- In production the client defaults API base URL to `/`, so no cross-origin configuration is required.
+
+---
+
 ## Contact
 
 - **Lead Developer:** Mateusz Podeszwa

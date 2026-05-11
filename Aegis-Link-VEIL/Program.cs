@@ -16,13 +16,24 @@ internal class Program
         builder.Services.AddScoped<ContactService>();
         builder.Services.AddScoped<SettingsService>();
         builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
-        var webApiBaseAddress = builder.Configuration["WebApi:BaseAddress"]
-            ?? throw new InvalidOperationException("WebApi:BaseAddress is not configured.");
+        var configuredBaseAddress = builder.Configuration["WebApi:BaseAddress"];
+        var webApiBaseAddress = ResolveWebApiBaseAddress(configuredBaseAddress, builder.HostEnvironment.BaseAddress);
         builder.Services.AddHttpClient("WebAPI", client =>
         {
-            client.BaseAddress = new Uri(webApiBaseAddress);
+            client.BaseAddress = webApiBaseAddress;
         });
 
         await builder.Build().RunAsync();
+    }
+
+    private static Uri ResolveWebApiBaseAddress(string? configuredBaseAddress, string hostBaseAddress)
+    {
+        if (string.IsNullOrWhiteSpace(configuredBaseAddress))
+            return new Uri(hostBaseAddress);
+
+        if (Uri.TryCreate(configuredBaseAddress, UriKind.Absolute, out var absolute))
+            return absolute;
+
+        return new Uri(new Uri(hostBaseAddress), configuredBaseAddress);
     }
 }
