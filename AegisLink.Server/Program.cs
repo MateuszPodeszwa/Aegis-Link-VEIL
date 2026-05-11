@@ -2,6 +2,7 @@ using AegisLink.Server.Data;
 using AegisLink.Server.Hubs;
 using AegisLink.Server.Services;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -69,7 +70,12 @@ if (hasAllowedOrigins)
 }
 app.UseAuthorization();
 app.UseDefaultFiles();
-app.UseStaticFiles();
+var staticFileContentTypeProvider = new FileExtensionContentTypeProvider();
+staticFileContentTypeProvider.Mappings[".dat"] = "application/octet-stream";
+app.UseStaticFiles(new StaticFileOptions
+{
+    ContentTypeProvider = staticFileContentTypeProvider
+});
 
 app.MapHub<SecureMessagingHub>("/chatHub");
 
