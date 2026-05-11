@@ -28,12 +28,20 @@ internal class Program
 
     private static Uri ResolveWebApiBaseAddress(string? configuredBaseAddress, string hostBaseAddress)
     {
+        var hostBaseUri = new Uri(hostBaseAddress);
+
         if (string.IsNullOrWhiteSpace(configuredBaseAddress))
-            return new Uri(hostBaseAddress);
+            return hostBaseUri;
 
         if (Uri.TryCreate(configuredBaseAddress, UriKind.Absolute, out var absolute))
-            return absolute;
+        {
+            // Guard against stale cached development config in deployed environments.
+            if (absolute.IsLoopback && !hostBaseUri.IsLoopback)
+                return hostBaseUri;
 
-        return new Uri(new Uri(hostBaseAddress), configuredBaseAddress);
+            return absolute;
+        }
+
+        return new Uri(hostBaseUri, configuredBaseAddress);
     }
 }
